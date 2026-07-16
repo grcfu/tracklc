@@ -17,6 +17,8 @@ import {
 } from './lib/filters'
 import { useProgress } from './hooks/useProgress'
 import { Header } from './components/Header'
+import { StatsRow } from './components/StatsRow'
+import { Heatmap } from './components/Heatmap'
 import { TabBar } from './components/TabBar'
 import { CategorySection } from './components/CategorySection'
 import { CompanyBar, type CompanyGrouping } from './components/CompanyBar'
@@ -126,6 +128,9 @@ export default function App() {
     <div className="min-h-screen bg-canvas text-ink">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <Header label={label} solved={solved} total={problems.length} />
+
+        <StatsRow progress={progress} dailyGoal={api.settings.dailyGoal} />
+        <Heatmap progress={progress} />
 
         <div className="mb-6">
           <TabBar active={tab} onChange={setTab} />
