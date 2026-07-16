@@ -56,6 +56,7 @@ export function FilterBar({ filters, onChange, onReset }: FilterBarProps) {
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
         />
         <input
+          id="search"
           type="search"
           value={filters.query}
           onChange={(e) => onChange({ query: e.target.value })}

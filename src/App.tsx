@@ -21,12 +21,14 @@ import {
   type FilterState,
 } from './lib/filters'
 import { useProgress } from './hooks/useProgress'
+import { useShortcuts } from './hooks/useShortcuts'
 import { Header } from './components/Header'
 import { ThemeToggle } from './components/ThemeToggle'
 import { SettingsMenu } from './components/SettingsMenu'
 import { Toast } from './components/Toast'
 import { ShareDialog } from './components/ShareDialog'
 import { SnapshotView } from './components/SnapshotView'
+import { ShortcutsHelp } from './components/ShortcutsHelp'
 import { DailySuggestions } from './components/DailySuggestions'
 import { StatsRow } from './components/StatsRow'
 import { ReviewQueue } from './components/ReviewQueue'
@@ -95,6 +97,7 @@ export default function App() {
     decodeSnapshot(window.location.hash),
   )
   const [showShare, setShowShare] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
 
   useEffect(() => {
     const onHashChange = () => setSnapshot(decodeSnapshot(window.location.hash))
@@ -216,6 +219,23 @@ export default function App() {
     [problems, progress],
   )
 
+  // ── Global keyboard shortcuts (disabled behind a snapshot or open dialog) ──
+  useShortcuts(
+    {
+      '/': (e) => {
+        e.preventDefault()
+        document.getElementById('search')?.focus()
+      },
+      '1': () => setTab('blind75'),
+      '2': () => setTab('neetcode150'),
+      '3': () => setTab('company'),
+      d: toggleTheme,
+      s: () => setShowShare(true),
+      '?': () => setShowHelp(true),
+    },
+    !snapshot && !showShare && !showHelp,
+  )
+
   const label =
     tab === 'company' ? `${COMPANY_META[company].label} · Frequently asked` : LIST_LABELS[tab]
 
@@ -328,11 +348,25 @@ export default function App() {
             )}
           </div>
         )}
+
+        <p className="mt-10 text-center text-xs text-muted">
+          Press{' '}
+          <button
+            type="button"
+            onClick={() => setShowHelp(true)}
+            className="rounded border border-line px-1.5 py-0.5 font-medium text-muted transition-colors hover:text-ink"
+          >
+            ?
+          </button>{' '}
+          for keyboard shortcuts
+        </p>
       </div>
 
       {showShare && (
         <ShareDialog progress={progress} onClose={() => setShowShare(false)} />
       )}
+
+      {showHelp && <ShortcutsHelp onClose={() => setShowHelp(false)} />}
 
       {toast && (
         <Toast
