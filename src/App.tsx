@@ -8,11 +8,19 @@ import {
   LIST_LABELS,
 } from './data/lists'
 import { COMPANY_META } from './data/companies'
+import {
+  DEFAULT_FILTERS,
+  isFiltering,
+  matchesFilters,
+  sortProblems,
+  type FilterState,
+} from './lib/filters'
 import { useProgress } from './hooks/useProgress'
 import { Header } from './components/Header'
 import { TabBar } from './components/TabBar'
 import { CategorySection } from './components/CategorySection'
 import { CompanyBar, type CompanyGrouping } from './components/CompanyBar'
+import { FilterBar } from './components/FilterBar'
 import type { RowHandlers } from './components/ProblemRow'
 
 export default function App() {
@@ -25,6 +33,13 @@ export default function App() {
     useState<CompanyGrouping>('frequency')
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+
+  const updateFilters = useCallback(
+    (patch: Partial<FilterState>) => setFilters((f) => ({ ...f, ...patch })),
+    [],
+  )
+  const resetFilters = useCallback(() => setFilters(DEFAULT_FILTERS), [])
 
   const toggleExpand = useCallback((id: string) => {
     setExpanded((prev) => {
@@ -71,14 +86,25 @@ export default function App() {
   )
 
   const groups = useMemo(() => {
+    const match = (p: (typeof problems)[number]) =>
+      matchesFilters(p, progress[p.id], filters)
+
+    // A non-default sort flattens everything into one ranked "Results" group.
+    if (filters.sort !== 'default') {
+      const flat = sortProblems(problems.filter(match), progress, filters.sort)
+      return flat.length ? [{ key: `Results (${flat.length})`, problems: flat }] : []
+    }
+
     if (tab === 'company') {
-      const cps = companyProblems(company)
+      const cps = companyProblems(company).filter((cp) =>
+        matchesFilters(cp.problem, progress[cp.problem.id], filters),
+      )
       return companyGrouping === 'frequency'
         ? groupByFrequency(cps)
         : groupByCategory(cps.map((c) => c.problem))
     }
-    return groupByCategory(problems)
-  }, [tab, company, companyGrouping, problems])
+    return groupByCategory(problems.filter(match))
+  }, [tab, company, companyGrouping, problems, filters, progress])
 
   /** Frequency lookup (only populated on the company tab). */
   const frequencyOf = useMemo(() => {
@@ -114,21 +140,45 @@ export default function App() {
           />
         )}
 
-        <div>
-          {groups.map((group) => (
-            <CategorySection
-              key={group.key}
-              title={group.key}
-              problems={group.problems}
-              progress={progress}
-              frequencyOf={frequencyOf}
-              collapsed={collapsed.has(group.key)}
-              onToggleCollapse={toggleCollapse}
-              expandedRows={expanded}
-              handlers={handlers}
-            />
-          ))}
-        </div>
+        <FilterBar
+          filters={filters}
+          onChange={updateFilters}
+          onReset={resetFilters}
+        />
+
+        {groups.length > 0 ? (
+          <div>
+            {groups.map((group) => (
+              <CategorySection
+                key={group.key}
+                title={group.key}
+                problems={group.problems}
+                progress={progress}
+                frequencyOf={frequencyOf}
+                collapsed={collapsed.has(group.key)}
+                onToggleCollapse={toggleCollapse}
+                expandedRows={expanded}
+                handlers={handlers}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-line bg-surface p-10 text-center">
+            <p className="font-display font-semibold text-ink">No matches</p>
+            <p className="mt-1 text-sm text-muted">
+              No problems match your current search and filters.
+            </p>
+            {isFiltering(filters) && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="mt-4 rounded-full bg-google-blue px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
