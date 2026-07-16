@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Share2 } from 'lucide-react'
 import type { CompanyId, Frequency, ListId } from './data/types'
 import { applyTheme } from './lib/theme'
 import { downloadStore, readFileText } from './lib/backup'
 import { validateImport } from './lib/storage'
+import { decodeSnapshot, snapshotProgress, type Snapshot } from './lib/share'
 import {
   companyProblems,
   groupByCategory,
@@ -24,6 +25,8 @@ import { Header } from './components/Header'
 import { ThemeToggle } from './components/ThemeToggle'
 import { SettingsMenu } from './components/SettingsMenu'
 import { Toast } from './components/Toast'
+import { ShareDialog } from './components/ShareDialog'
+import { SnapshotView } from './components/SnapshotView'
 import { DailySuggestions } from './components/DailySuggestions'
 import { StatsRow } from './components/StatsRow'
 import { ReviewQueue } from './components/ReviewQueue'
@@ -86,6 +89,40 @@ export default function App() {
     api.resetProgress()
     showToast('Progress reset.', () => api.replaceStore(prev))
   }, [api, showToast])
+
+  // ── Snapshot sharing: open the tracker as a read-only view from a link ─────
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(() =>
+    decodeSnapshot(window.location.hash),
+  )
+  const [showShare, setShowShare] = useState(false)
+
+  useEffect(() => {
+    const onHashChange = () => setSnapshot(decodeSnapshot(window.location.hash))
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
+
+  const exitSnapshot = useCallback(() => {
+    // Drop the hash without adding a history entry, then re-read.
+    history.replaceState(null, '', window.location.pathname + window.location.search)
+    setSnapshot(null)
+  }, [])
+
+  const importSnapshot = useCallback(
+    (snap: Snapshot) => {
+      const prev = api.store
+      api.replaceStore({
+        version: 1,
+        progress: snapshotProgress(snap),
+        settings: api.settings,
+      })
+      exitSnapshot()
+      showToast('Snapshot imported into your tracker.', () =>
+        api.replaceStore(prev),
+      )
+    },
+    [api, exitSnapshot, showToast],
+  )
 
   const [tab, setTab] = useState<ListId>('blind75')
   const [company, setCompany] = useState<CompanyId>('google')
@@ -182,6 +219,17 @@ export default function App() {
   const label =
     tab === 'company' ? `${COMPANY_META[company].label} · Frequently asked` : LIST_LABELS[tab]
 
+  // A snapshot link takes over the whole screen as a read-only view.
+  if (snapshot) {
+    return (
+      <SnapshotView
+        snapshot={snapshot}
+        onImport={() => importSnapshot(snapshot)}
+        onExit={exitSnapshot}
+      />
+    )
+  }
+
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
@@ -191,6 +239,15 @@ export default function App() {
           total={problems.length}
           right={
             <>
+              <button
+                type="button"
+                onClick={() => setShowShare(true)}
+                aria-label="Share progress"
+                title="Share progress"
+                className="rounded-full p-2 text-muted transition-colors hover:bg-surface hover:text-ink"
+              >
+                <Share2 size={18} />
+              </button>
               <ThemeToggle theme={settings.theme} onToggle={toggleTheme} />
               <SettingsMenu
                 dailyGoal={settings.dailyGoal}
@@ -272,6 +329,10 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {showShare && (
+        <ShareDialog progress={progress} onClose={() => setShowShare(false)} />
+      )}
 
       {toast && (
         <Toast
