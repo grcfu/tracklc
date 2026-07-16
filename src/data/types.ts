@@ -32,6 +32,44 @@ export interface CompanyEntry {
   frequency: Frequency
 }
 
+export type Confidence = 1 | 2 | 3 | 4 | 5
+
+/** One entry in the confidence-over-time log. */
+export interface ConfidencePoint {
+  date: string
+  value: Confidence
+}
+
+/**
+ * Per-problem user progress, keyed by problem id and stored separately from
+ * problem data. The *presence* of `confidence` means the problem is solved;
+ * its absence means unattempted.
+ */
+export interface ProblemProgress {
+  confidence?: Confidence
+  dateSolved?: string
+  lastReviewed?: string
+  notes?: string
+  attempts?: number
+  flagged?: boolean
+  confidenceHistory?: ConfidencePoint[]
+}
+
+export type Theme = 'light' | 'dark'
+
+export interface Settings {
+  theme: Theme
+  dailyGoal: number
+  lastBackup?: string
+}
+
+/** The full persisted store (localStorage key "lc-tracker-v1"). */
+export interface Store {
+  version: 1
+  progress: Record<string, ProblemProgress>
+  settings: Settings
+}
+
 /** Build a canonical LeetCode problem URL from a slug. */
 export const lc = (slug: string): string =>
   `https://leetcode.com/problems/${slug}/`
