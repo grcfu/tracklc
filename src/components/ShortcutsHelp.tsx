@@ -8,6 +8,7 @@ export const SHORTCUTS: { keys: string[]; description: string }[] = [
   { keys: ['2'], description: 'NeetCode 150 tab' },
   { keys: ['3'], description: 'Company tab' },
   { keys: ['d'], description: 'Toggle dark mode' },
+  { keys: ['l'], description: 'Activity log' },
   { keys: ['s'], description: 'Share progress' },
   { keys: ['?'], description: 'Show this help' },
   { keys: ['Esc'], description: 'Close dialogs' },

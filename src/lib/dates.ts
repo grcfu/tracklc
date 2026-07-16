@@ -47,6 +47,16 @@ export function formatDate(dateISO: string): string {
   })
 }
 
+/** Day heading with weekday, e.g. "Tue, Jul 14, 2026". */
+export function formatDayHeading(dateISO: string): string {
+  return fromISODate(dateISO).toLocaleDateString(undefined, {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
 /** Relative phrasing like "today", "yesterday", "3 days ago". */
 export function relativeDays(dateISO: string): string {
   const n = daysSince(dateISO)

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Share2 } from 'lucide-react'
+import { AlertTriangle, CalendarDays, Share2 } from 'lucide-react'
 import type { CompanyId, Frequency, ListId } from './data/types'
 import { applyTheme } from './lib/theme'
 import { downloadStore, readFileText } from './lib/backup'
@@ -29,6 +29,7 @@ import { Toast } from './components/Toast'
 import { ShareDialog } from './components/ShareDialog'
 import { SnapshotView } from './components/SnapshotView'
 import { ShortcutsHelp } from './components/ShortcutsHelp'
+import { ActivityLog } from './components/ActivityLog'
 import { DailySuggestions } from './components/DailySuggestions'
 import { StatsRow } from './components/StatsRow'
 import { ReviewQueue } from './components/ReviewQueue'
@@ -98,6 +99,7 @@ export default function App() {
   )
   const [showShare, setShowShare] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
+  const [showLog, setShowLog] = useState(false)
 
   useEffect(() => {
     const onHashChange = () => setSnapshot(decodeSnapshot(window.location.hash))
@@ -231,9 +233,10 @@ export default function App() {
       '3': () => setTab('company'),
       d: toggleTheme,
       s: () => setShowShare(true),
+      l: () => setShowLog(true),
       '?': () => setShowHelp(true),
     },
-    !snapshot && !showShare && !showHelp,
+    !snapshot && !showShare && !showHelp && !showLog,
   )
 
   const label =
@@ -261,9 +264,18 @@ export default function App() {
             <>
               <button
                 type="button"
+                onClick={() => setShowLog(true)}
+                aria-label="Activity log"
+                title="Activity log (l)"
+                className="rounded-full p-2 text-muted transition-colors hover:bg-surface hover:text-ink"
+              >
+                <CalendarDays size={18} />
+              </button>
+              <button
+                type="button"
                 onClick={() => setShowShare(true)}
                 aria-label="Share progress"
-                title="Share progress"
+                title="Share progress (s)"
                 className="rounded-full p-2 text-muted transition-colors hover:bg-surface hover:text-ink"
               >
                 <Share2 size={18} />
@@ -364,6 +376,10 @@ export default function App() {
 
       {showShare && (
         <ShareDialog progress={progress} onClose={() => setShowShare(false)} />
+      )}
+
+      {showLog && (
+        <ActivityLog progress={progress} onClose={() => setShowLog(false)} />
       )}
 
       {showHelp && <ShortcutsHelp onClose={() => setShowHelp(false)} />}

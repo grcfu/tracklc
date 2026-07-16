@@ -7,10 +7,12 @@ interface ModalProps {
   children: ReactNode
   /** Optional icon shown left of the title. */
   icon?: ReactNode
+  /** Wider shell (max-w-2xl) for report-style content. */
+  wide?: boolean
 }
 
 /** Accessible modal shell: dimmed backdrop, Escape/backdrop-click to close. */
-export function Modal({ title, onClose, children, icon }: ModalProps) {
+export function Modal({ title, onClose, children, icon, wide }: ModalProps) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -30,7 +32,10 @@ export function Modal({ title, onClose, children, icon }: ModalProps) {
         aria-modal="true"
         aria-label={title}
         onMouseDown={(e) => e.stopPropagation()}
-        className="relative z-10 w-full max-w-md rounded-2xl border border-line bg-elevated p-6 shadow-cardHover animate-slide-up"
+        className={
+          'relative z-10 flex max-h-[85vh] w-full flex-col rounded-2xl border border-line bg-elevated p-6 shadow-cardHover animate-slide-up ' +
+          (wide ? 'max-w-2xl' : 'max-w-md')
+        }
       >
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-ink">
