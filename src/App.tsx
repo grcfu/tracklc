@@ -17,7 +17,9 @@ import {
 } from './lib/filters'
 import { useProgress } from './hooks/useProgress'
 import { Header } from './components/Header'
+import { DailySuggestions } from './components/DailySuggestions'
 import { StatsRow } from './components/StatsRow'
+import { ReviewQueue } from './components/ReviewQueue'
 import { Heatmap } from './components/Heatmap'
 import { TabBar } from './components/TabBar'
 import { CategorySection } from './components/CategorySection'
@@ -129,7 +131,9 @@ export default function App() {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <Header label={label} solved={solved} total={problems.length} />
 
+        <DailySuggestions progress={progress} />
         <StatsRow progress={progress} dailyGoal={api.settings.dailyGoal} />
+        <ReviewQueue progress={progress} onReview={api.markReviewedToday} />
         <Heatmap progress={progress} />
 
         <div className="mb-6">
