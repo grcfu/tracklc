@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
-import type { CompanyId, ListId } from './data/types'
-import { listProblems, LIST_LABELS } from './data/lists'
+import { useCallback, useMemo, useState } from 'react'
+import type { CompanyId, Frequency, ListId } from './data/types'
+import { companyProblems, listProblems, LIST_LABELS } from './data/lists'
 import { COMPANY_META, COMPANY_ORDER } from './data/companies'
 import { useProgress } from './hooks/useProgress'
 import { Header } from './components/Header'
 import { TabBar } from './components/TabBar'
+import { ProblemRow } from './components/ProblemRow'
 
 export default function App() {
   const api = useProgress()
@@ -12,11 +13,29 @@ export default function App() {
 
   const [tab, setTab] = useState<ListId>('blind75')
   const [company, setCompany] = useState<CompanyId>('google')
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
+
+  const toggleExpand = useCallback((id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
 
   const problems = useMemo(
     () => listProblems(tab, company),
     [tab, company],
   )
+
+  /** Frequency lookup (only populated on the company tab). */
+  const frequencyOf = useMemo(() => {
+    if (tab !== 'company') return undefined
+    const map = new Map<string, Frequency>()
+    for (const cp of companyProblems(company)) map.set(cp.problem.id, cp.frequency)
+    return map
+  }, [tab, company])
 
   const solved = useMemo(
     () => problems.filter((p) => progress[p.id]?.confidence != null).length,
@@ -49,12 +68,24 @@ export default function App() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-line bg-surface p-8 text-center shadow-card">
-          <p className="text-muted">
-            {problems.length} problems in <strong>{label}</strong>. Problem list
-            UI lands next.
-          </p>
-        </div>
+        <ul className="space-y-2">
+          {problems.map((problem) => (
+            <ProblemRow
+              key={problem.id}
+              problem={problem}
+              progress={progress[problem.id]}
+              frequency={frequencyOf?.get(problem.id)}
+              expanded={expanded.has(problem.id)}
+              onToggleExpand={toggleExpand}
+              onSetConfidence={api.setConfidence}
+              onClearRating={api.clearRating}
+              onSetNotes={api.setNotes}
+              onSetAttempts={api.setAttempts}
+              onToggleFlag={api.toggleFlag}
+              onSetDateSolved={api.setDateSolved}
+            />
+          ))}
+        </ul>
       </div>
     </div>
   )
