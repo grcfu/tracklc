@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AlertTriangle } from 'lucide-react'
 import type { CompanyId, Frequency, ListId } from './data/types'
 import { applyTheme } from './lib/theme'
+import { downloadStore, readFileText } from './lib/backup'
+import { validateImport } from './lib/storage'
 import {
   companyProblems,
   groupByCategory,
@@ -19,6 +22,8 @@ import {
 import { useProgress } from './hooks/useProgress'
 import { Header } from './components/Header'
 import { ThemeToggle } from './components/ThemeToggle'
+import { SettingsMenu } from './components/SettingsMenu'
+import { Toast } from './components/Toast'
 import { DailySuggestions } from './components/DailySuggestions'
 import { StatsRow } from './components/StatsRow'
 import { ReviewQueue } from './components/ReviewQueue'
@@ -41,6 +46,46 @@ export default function App() {
   const toggleTheme = useCallback(() => {
     api.setTheme(settings.theme === 'dark' ? 'light' : 'dark')
   }, [api, settings.theme])
+
+  // ── Data management: export / import / reset, each with an undo toast ──────
+  const [toast, setToast] = useState<{
+    message: string
+    undo?: () => void
+  } | null>(null)
+
+  const showToast = useCallback((message: string, undo?: () => void) => {
+    setToast({ message, undo })
+  }, [])
+
+  const doExport = useCallback(() => {
+    downloadStore(api.store)
+    api.markBackedUp()
+    showToast('Backup downloaded.')
+  }, [api, showToast])
+
+  const doImport = useCallback(
+    async (file: File) => {
+      try {
+        const result = validateImport(JSON.parse(await readFileText(file)))
+        if (!result.ok) {
+          showToast(result.error)
+          return
+        }
+        const prev = api.store
+        api.replaceStore(result.store)
+        showToast('Progress imported.', () => api.replaceStore(prev))
+      } catch {
+        showToast('That file could not be read as JSON.')
+      }
+    },
+    [api, showToast],
+  )
+
+  const doReset = useCallback(() => {
+    const prev = api.store
+    api.resetProgress()
+    showToast('Progress reset.', () => api.replaceStore(prev))
+  }, [api, showToast])
 
   const [tab, setTab] = useState<ListId>('blind75')
   const [company, setCompany] = useState<CompanyId>('google')
@@ -144,8 +189,30 @@ export default function App() {
           label={label}
           solved={solved}
           total={problems.length}
-          right={<ThemeToggle theme={settings.theme} onToggle={toggleTheme} />}
+          right={
+            <>
+              <ThemeToggle theme={settings.theme} onToggle={toggleTheme} />
+              <SettingsMenu
+                dailyGoal={settings.dailyGoal}
+                onSetDailyGoal={api.setDailyGoal}
+                lastBackup={settings.lastBackup}
+                onExport={doExport}
+                onImport={doImport}
+                onReset={doReset}
+              />
+            </>
+          }
         />
+
+        {api.saveError && (
+          <div
+            role="alert"
+            className="mb-6 flex items-start gap-2 rounded-xl border border-google-red/40 bg-google-red/10 px-4 py-3 text-sm text-google-red"
+          >
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+            <span>{api.saveError}</span>
+          </div>
+        )}
 
         <DailySuggestions progress={progress} />
         <StatsRow progress={progress} dailyGoal={api.settings.dailyGoal} />
@@ -205,6 +272,14 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          onUndo={toast.undo}
+          onDismiss={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }
