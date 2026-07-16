@@ -29,3 +29,22 @@ export const LIST_LABELS: Record<Exclude<ListId, 'company'>, string> = {
   blind75: 'Blind 75',
   neetcode150: 'NeetCode 150',
 }
+
+export interface Group<T> {
+  key: string
+  problems: T[]
+}
+
+/** Group problems by category, preserving first-seen order of both. */
+export function groupByCategory(problems: Problem[]): Group<Problem>[] {
+  const order: string[] = []
+  const map = new Map<string, Problem[]>()
+  for (const problem of problems) {
+    if (!map.has(problem.category)) {
+      map.set(problem.category, [])
+      order.push(problem.category)
+    }
+    map.get(problem.category)!.push(problem)
+  }
+  return order.map((key) => ({ key, problems: map.get(key)! }))
+}

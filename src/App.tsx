@@ -1,11 +1,17 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { CompanyId, Frequency, ListId } from './data/types'
-import { companyProblems, listProblems, LIST_LABELS } from './data/lists'
+import {
+  companyProblems,
+  groupByCategory,
+  listProblems,
+  LIST_LABELS,
+} from './data/lists'
 import { COMPANY_META, COMPANY_ORDER } from './data/companies'
 import { useProgress } from './hooks/useProgress'
 import { Header } from './components/Header'
 import { TabBar } from './components/TabBar'
-import { ProblemRow } from './components/ProblemRow'
+import { CategorySection } from './components/CategorySection'
+import type { RowHandlers } from './components/ProblemRow'
 
 export default function App() {
   const api = useProgress()
@@ -14,6 +20,7 @@ export default function App() {
   const [tab, setTab] = useState<ListId>('blind75')
   const [company, setCompany] = useState<CompanyId>('google')
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
 
   const toggleExpand = useCallback((id: string) => {
     setExpanded((prev) => {
@@ -24,10 +31,42 @@ export default function App() {
     })
   }, [])
 
+  const toggleCollapse = useCallback((title: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      if (next.has(title)) next.delete(title)
+      else next.add(title)
+      return next
+    })
+  }, [])
+
+  const handlers = useMemo<RowHandlers>(
+    () => ({
+      onToggleExpand: toggleExpand,
+      onSetConfidence: api.setConfidence,
+      onClearRating: api.clearRating,
+      onSetNotes: api.setNotes,
+      onSetAttempts: api.setAttempts,
+      onToggleFlag: api.toggleFlag,
+      onSetDateSolved: api.setDateSolved,
+    }),
+    [
+      toggleExpand,
+      api.setConfidence,
+      api.clearRating,
+      api.setNotes,
+      api.setAttempts,
+      api.toggleFlag,
+      api.setDateSolved,
+    ],
+  )
+
   const problems = useMemo(
     () => listProblems(tab, company),
     [tab, company],
   )
+
+  const groups = useMemo(() => groupByCategory(problems), [problems])
 
   /** Frequency lookup (only populated on the company tab). */
   const frequencyOf = useMemo(() => {
@@ -68,24 +107,21 @@ export default function App() {
           )}
         </div>
 
-        <ul className="space-y-2">
-          {problems.map((problem) => (
-            <ProblemRow
-              key={problem.id}
-              problem={problem}
-              progress={progress[problem.id]}
-              frequency={frequencyOf?.get(problem.id)}
-              expanded={expanded.has(problem.id)}
-              onToggleExpand={toggleExpand}
-              onSetConfidence={api.setConfidence}
-              onClearRating={api.clearRating}
-              onSetNotes={api.setNotes}
-              onSetAttempts={api.setAttempts}
-              onToggleFlag={api.toggleFlag}
-              onSetDateSolved={api.setDateSolved}
+        <div>
+          {groups.map((group) => (
+            <CategorySection
+              key={group.key}
+              title={group.key}
+              problems={group.problems}
+              progress={progress}
+              frequencyOf={frequencyOf}
+              collapsed={collapsed.has(group.key)}
+              onToggleCollapse={toggleCollapse}
+              expandedRows={expanded}
+              handlers={handlers}
             />
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   )

@@ -23,11 +23,8 @@ const FREQUENCY_CLASS: Record<Frequency, string> = {
   low: 'bg-line/60 text-muted',
 }
 
-export interface ProblemRowProps {
-  problem: Problem
-  progress?: ProblemProgress
-  frequency?: Frequency
-  expanded: boolean
+/** The set of row mutations, threaded down as one stable bundle. */
+export interface RowHandlers {
   onToggleExpand: (id: string) => void
   onSetConfidence: (id: string, v: Confidence) => void
   onClearRating: (id: string) => void
@@ -35,6 +32,13 @@ export interface ProblemRowProps {
   onSetAttempts: (id: string, n: number) => void
   onToggleFlag: (id: string) => void
   onSetDateSolved: (id: string, date: string) => void
+}
+
+export interface ProblemRowProps extends RowHandlers {
+  problem: Problem
+  progress?: ProblemProgress
+  frequency?: Frequency
+  expanded: boolean
 }
 
 function ProblemRowImpl({
