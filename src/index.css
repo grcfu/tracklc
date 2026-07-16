@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme (default) — Google surfaces */
+    --canvas: 255 255 255; /* #FFFFFF */
+    --surface: 248 249 250; /* #F8F9FA */
+    --elevated: 255 255 255;
+    --ink: 32 33 36; /* #202124 */
+    --muted: 95 99 104; /* #5F6368 */
+    --line: 218 220 224; /* #DADCE0 */
+  }
+
+  .dark {
+    /* Google Material dark palette */
+    --canvas: 32 33 36; /* #202124 */
+    --surface: 41 42 45; /* #292A2D */
+    --elevated: 48 49 52; /* #303134 */
+    --ink: 232 234 237; /* #E8EAED */
+    --muted: 154 160 166; /* #9AA0A6 */
+    --line: 60 64 67; /* #3C4043 */
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    font-feature-settings: 'kern';
+  }
+
+  /* Consistent, visible focus ring for keyboard users */
+  :focus-visible {
+    @apply outline-none ring-2 ring-google-blue ring-offset-2 ring-offset-canvas;
+  }
+}
+
+@layer utilities {
+  /* Respect reduced-motion for the whole app */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
