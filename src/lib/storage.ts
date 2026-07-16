@@ -1,14 +1,15 @@
 import type { Store } from '../data/types'
+import { systemTheme } from './theme'
 
 export const STORAGE_KEY = 'lc-tracker-v1'
 export const SCHEMA_VERSION = 1 as const
 
-/** A fresh, empty store. */
+/** A fresh, empty store. Seeds the theme from the OS preference on first run. */
 export function defaultStore(): Store {
   return {
     version: SCHEMA_VERSION,
     progress: {},
-    settings: { theme: 'light', dailyGoal: 3 },
+    settings: { theme: systemTheme(), dailyGoal: 3 },
   }
 }
 

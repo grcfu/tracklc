@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { CompanyId, Frequency, ListId } from './data/types'
+import { applyTheme } from './lib/theme'
 import {
   companyProblems,
   groupByCategory,
@@ -17,6 +18,7 @@ import {
 } from './lib/filters'
 import { useProgress } from './hooks/useProgress'
 import { Header } from './components/Header'
+import { ThemeToggle } from './components/ThemeToggle'
 import { DailySuggestions } from './components/DailySuggestions'
 import { StatsRow } from './components/StatsRow'
 import { ReviewQueue } from './components/ReviewQueue'
@@ -29,7 +31,16 @@ import type { RowHandlers } from './components/ProblemRow'
 
 export default function App() {
   const api = useProgress()
-  const { progress } = api
+  const { progress, settings } = api
+
+  // Keep the document theme in sync with the stored preference.
+  useEffect(() => {
+    applyTheme(settings.theme)
+  }, [settings.theme])
+
+  const toggleTheme = useCallback(() => {
+    api.setTheme(settings.theme === 'dark' ? 'light' : 'dark')
+  }, [api, settings.theme])
 
   const [tab, setTab] = useState<ListId>('blind75')
   const [company, setCompany] = useState<CompanyId>('google')
@@ -129,7 +140,12 @@ export default function App() {
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <Header label={label} solved={solved} total={problems.length} />
+        <Header
+          label={label}
+          solved={solved}
+          total={problems.length}
+          right={<ThemeToggle theme={settings.theme} onToggle={toggleTheme} />}
+        />
 
         <DailySuggestions progress={progress} />
         <StatsRow progress={progress} dailyGoal={api.settings.dailyGoal} />
