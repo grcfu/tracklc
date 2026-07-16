@@ -35,6 +35,20 @@ export interface Group<T> {
   problems: T[]
 }
 
+const FREQUENCY_TIERS: { key: string; freq: Frequency }[] = [
+  { key: 'High frequency', freq: 'high' },
+  { key: 'Medium frequency', freq: 'medium' },
+  { key: 'Low frequency', freq: 'low' },
+]
+
+/** Group a company's problems into High / Medium / Low tiers (non-empty only). */
+export function groupByFrequency(cps: CompanyProblem[]): Group<Problem>[] {
+  return FREQUENCY_TIERS.map((tier) => ({
+    key: tier.key,
+    problems: cps.filter((c) => c.frequency === tier.freq).map((c) => c.problem),
+  })).filter((g) => g.problems.length > 0)
+}
+
 /** Group problems by category, preserving first-seen order of both. */
 export function groupByCategory(problems: Problem[]): Group<Problem>[] {
   const order: string[] = []

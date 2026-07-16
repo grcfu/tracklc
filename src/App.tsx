@@ -3,14 +3,16 @@ import type { CompanyId, Frequency, ListId } from './data/types'
 import {
   companyProblems,
   groupByCategory,
+  groupByFrequency,
   listProblems,
   LIST_LABELS,
 } from './data/lists'
-import { COMPANY_META, COMPANY_ORDER } from './data/companies'
+import { COMPANY_META } from './data/companies'
 import { useProgress } from './hooks/useProgress'
 import { Header } from './components/Header'
 import { TabBar } from './components/TabBar'
 import { CategorySection } from './components/CategorySection'
+import { CompanyBar, type CompanyGrouping } from './components/CompanyBar'
 import type { RowHandlers } from './components/ProblemRow'
 
 export default function App() {
@@ -19,6 +21,8 @@ export default function App() {
 
   const [tab, setTab] = useState<ListId>('blind75')
   const [company, setCompany] = useState<CompanyId>('google')
+  const [companyGrouping, setCompanyGrouping] =
+    useState<CompanyGrouping>('frequency')
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
 
@@ -66,7 +70,15 @@ export default function App() {
     [tab, company],
   )
 
-  const groups = useMemo(() => groupByCategory(problems), [problems])
+  const groups = useMemo(() => {
+    if (tab === 'company') {
+      const cps = companyProblems(company)
+      return companyGrouping === 'frequency'
+        ? groupByFrequency(cps)
+        : groupByCategory(cps.map((c) => c.problem))
+    }
+    return groupByCategory(problems)
+  }, [tab, company, companyGrouping, problems])
 
   /** Frequency lookup (only populated on the company tab). */
   const frequencyOf = useMemo(() => {
@@ -89,23 +101,18 @@ export default function App() {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <Header label={label} solved={solved} total={problems.length} />
 
-        <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="mb-6">
           <TabBar active={tab} onChange={setTab} />
-          {tab === 'company' && (
-            <select
-              value={company}
-              onChange={(e) => setCompany(e.target.value as CompanyId)}
-              className="rounded-full border border-line bg-elevated px-4 py-2 text-sm font-medium text-ink"
-              aria-label="Select company"
-            >
-              {COMPANY_ORDER.map((id) => (
-                <option key={id} value={id}>
-                  {COMPANY_META[id].label}
-                </option>
-              ))}
-            </select>
-          )}
         </div>
+
+        {tab === 'company' && (
+          <CompanyBar
+            company={company}
+            onCompanyChange={setCompany}
+            grouping={companyGrouping}
+            onGroupingChange={setCompanyGrouping}
+          />
+        )}
 
         <div>
           {groups.map((group) => (
