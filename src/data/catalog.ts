@@ -1,5 +1,6 @@
 import type { Problem } from './types'
 import { BLIND75 } from './blind75'
+import { NEETCODE150 } from './neetcode150'
 
 /**
  * The merged problem catalog: a single source of truth for problem metadata
@@ -10,7 +11,7 @@ import { BLIND75 } from './blind75'
  *
  * More sources (NeetCode 150, company-only extras) are merged in as they land.
  */
-const SOURCES: Problem[][] = [BLIND75]
+const SOURCES: Problem[][] = [BLIND75, NEETCODE150]
 
 function buildCatalog(sources: Problem[][]): Record<string, Problem> {
   const catalog: Record<string, Problem> = {}
