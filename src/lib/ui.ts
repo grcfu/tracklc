@@ -1,4 +1,4 @@
-import type { Difficulty } from '../data/types'
+import type { Difficulty, HeatmapColor } from '../data/types'
 
 /** Tiny classnames joiner. */
 export function cn(
@@ -23,6 +23,36 @@ export const DIFFICULTY_COLOR: Record<Difficulty, string> = {
   Easy: '#34A853',
   Medium: '#FBBC04',
   Hard: '#EA4335',
+}
+
+/** The four Google brand colors as hex, keyed by name. */
+export const GOOGLE_COLORS: Record<HeatmapColor, string> = {
+  blue: '#4285F4',
+  red: '#EA4335',
+  yellow: '#FBBC04',
+  green: '#34A853',
+}
+
+/** Opacity per heat level (0 = empty, 4 = most active). */
+const HEAT_ALPHA = [0, 0.3, 0.5, 0.75, 1] as const
+
+/** Bucket an activity count into a heat level 0–4. */
+export function heatLevel(count: number): number {
+  if (count <= 0) return 0
+  if (count === 1) return 1
+  if (count === 2) return 2
+  if (count <= 4) return 3
+  return 4
+}
+
+/** A CSS rgba() string for the given accent color at a heat level (1–4). */
+export function heatColor(color: HeatmapColor, level: number): string {
+  const hex = GOOGLE_COLORS[color]
+  const n = parseInt(hex.slice(1), 16)
+  const r = (n >> 16) & 255
+  const g = (n >> 8) & 255
+  const b = n & 255
+  return `rgba(${r}, ${g}, ${b}, ${HEAT_ALPHA[level] ?? 0})`
 }
 
 /** Clamp a number into [min, max]. */
