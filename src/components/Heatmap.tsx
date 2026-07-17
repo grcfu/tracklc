@@ -1,26 +1,19 @@
 import { useMemo } from 'react'
-import type { ProblemProgress } from '../data/types'
+import type { HeatmapColor, ProblemProgress } from '../data/types'
 import { activityByDate } from '../lib/stats'
 import { addDays, formatDate, fromISODate, todayISO } from '../lib/dates'
-import { cn } from '../lib/ui'
+import { cn, heatColor, heatLevel } from '../lib/ui'
 
 const WEEKS = 22 // ~5 months
 
-/** Map an activity count to one of five green shades. */
-function shade(count: number): string {
-  if (count <= 0) return 'bg-line/40'
-  if (count === 1) return 'bg-google-green/30'
-  if (count === 2) return 'bg-google-green/50'
-  if (count <= 4) return 'bg-google-green/75'
-  return 'bg-google-green'
-}
-
 interface HeatmapProps {
   progress: Record<string, ProblemProgress>
+  /** Accent color for the filled cells. */
+  color: HeatmapColor
 }
 
 /** GitHub-style contribution grid of solve/review activity, last ~5 months. */
-export function Heatmap({ progress }: HeatmapProps) {
+export function Heatmap({ progress, color }: HeatmapProps) {
   const counts = useMemo(() => activityByDate(progress), [progress])
 
   const { weeks, monthLabels, totalDays } = useMemo(() => {
@@ -90,20 +83,29 @@ export function Heatmap({ progress }: HeatmapProps) {
           <div className="flex gap-[3px]">
             {weeks.map((week, wi) => (
               <div key={wi} className="flex flex-col gap-[3px]">
-                {week.map((day) => (
-                  <div
-                    key={day.date}
-                    title={
-                      day.future
-                        ? ''
-                        : `${formatDate(day.date)} — ${day.count} action${day.count === 1 ? '' : 's'}`
-                    }
-                    className={cn(
-                      'h-[11px] w-[11px] rounded-[2px]',
-                      day.future ? 'bg-transparent' : shade(day.count),
-                    )}
-                  />
-                ))}
+                {week.map((day) => {
+                  const level = heatLevel(day.count)
+                  return (
+                    <div
+                      key={day.date}
+                      title={
+                        day.future
+                          ? ''
+                          : `${formatDate(day.date)} — ${day.count} action${day.count === 1 ? '' : 's'}`
+                      }
+                      className={cn(
+                        'h-[11px] w-[11px] rounded-[2px]',
+                        (day.future || level === 0) && 'bg-line/40',
+                        day.future && 'bg-transparent',
+                      )}
+                      style={
+                        !day.future && level > 0
+                          ? { backgroundColor: heatColor(color, level) }
+                          : undefined
+                      }
+                    />
+                  )
+                })}
               </div>
             ))}
           </div>
@@ -113,11 +115,18 @@ export function Heatmap({ progress }: HeatmapProps) {
       {/* Legend */}
       <div className="mt-3 flex items-center justify-end gap-1 text-[10px] text-muted">
         <span>Less</span>
-        {['bg-line/40', 'bg-google-green/30', 'bg-google-green/50', 'bg-google-green/75', 'bg-google-green'].map(
-          (c) => (
-            <span key={c} className={cn('h-[11px] w-[11px] rounded-[2px]', c)} />
-          ),
-        )}
+        {[0, 1, 2, 3, 4].map((level) => (
+          <span
+            key={level}
+            className={cn(
+              'h-[11px] w-[11px] rounded-[2px]',
+              level === 0 && 'bg-line/40',
+            )}
+            style={
+              level > 0 ? { backgroundColor: heatColor(color, level) } : undefined
+            }
+          />
+        ))}
         <span>More</span>
       </div>
     </div>
