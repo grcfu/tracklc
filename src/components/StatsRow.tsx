@@ -13,6 +13,8 @@ import {
 interface StatsRowProps {
   progress: Record<string, ProblemProgress>
   dailyGoal: number
+  /** 'grid' = responsive 2/4-up row (default); 'stack' = single column for a sidebar. */
+  layout?: 'grid' | 'stack'
 }
 
 function Card({ children }: { children: React.ReactNode }) {
@@ -24,7 +26,7 @@ function Card({ children }: { children: React.ReactNode }) {
 }
 
 /** GitHub-style small dashboard: difficulty counts, streak, weakest area, goal. */
-export function StatsRow({ progress, dailyGoal }: StatsRowProps) {
+export function StatsRow({ progress, dailyGoal, layout = 'grid' }: StatsRowProps) {
   const byDiff = useMemo(() => solvedByDifficulty(progress), [progress])
   const total = useMemo(() => totalSolved(progress), [progress])
   const streak = useMemo(() => currentStreak(progress), [progress])
@@ -33,8 +35,13 @@ export function StatsRow({ progress, dailyGoal }: StatsRowProps) {
 
   const goalPct = Math.min(1, dailyGoal > 0 ? today / dailyGoal : 0)
 
+  const containerCls =
+    layout === 'stack'
+      ? 'grid grid-cols-1 gap-3'
+      : 'mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4'
+
   return (
-    <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className={containerCls}>
       {/* Solved by difficulty */}
       <Card>
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">
