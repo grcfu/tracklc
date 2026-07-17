@@ -12,6 +12,7 @@ Built for studying *smarter*: spaced-repetition review, gentle daily suggestions
 - **Daily suggestions** — a quiet, navigable rotating nudge (never a nag).
 - **Stats & heatmap** — solved-by-difficulty, current streak, weakest category, daily-goal ring, and a GitHub-style contribution grid whose accent color is selectable from the four Google brand colors.
 - **Responsive dashboard** — on wide screens the stats, review queue, and heatmap sit in a left sidebar beside the problem lists; on narrow screens everything stacks into one column.
+- **Activity log** — pick a date range and get a day-by-day list of everything you solved or reviewed, with one-click plain-text copy to share.
 - **Search, filters, sort** — by name, difficulty, status, and more.
 - **Flag/bookmark** any problem to revisit.
 - **Dark mode**, keyboard shortcuts, and full keyboard accessibility.
