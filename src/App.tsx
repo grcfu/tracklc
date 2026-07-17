@@ -306,7 +306,11 @@ export default function App() {
         <DailySuggestions progress={progress} />
         <StatsRow progress={progress} dailyGoal={api.settings.dailyGoal} />
         <ReviewQueue progress={progress} onReview={api.markReviewedToday} />
-        <Heatmap progress={progress} color={settings.heatmapColor} />
+        <Heatmap
+          progress={progress}
+          color={settings.heatmapColor}
+          onColorChange={api.setHeatmapColor}
+        />
 
         <div className="mb-6">
           <TabBar active={tab} onChange={setTab} />

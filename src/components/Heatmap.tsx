@@ -2,18 +2,21 @@ import { useMemo } from 'react'
 import type { HeatmapColor, ProblemProgress } from '../data/types'
 import { activityByDate } from '../lib/stats'
 import { addDays, formatDate, fromISODate, todayISO } from '../lib/dates'
-import { cn, heatColor, heatLevel } from '../lib/ui'
+import { cn, GOOGLE_COLORS, heatColor, heatLevel } from '../lib/ui'
 
 const WEEKS = 22 // ~5 months
+const COLOR_ORDER: HeatmapColor[] = ['green', 'blue', 'red', 'yellow']
 
 interface HeatmapProps {
   progress: Record<string, ProblemProgress>
   /** Accent color for the filled cells. */
   color: HeatmapColor
+  /** Change the accent color (renders the swatch picker). */
+  onColorChange: (color: HeatmapColor) => void
 }
 
 /** GitHub-style contribution grid of solve/review activity, last ~5 months. */
-export function Heatmap({ progress, color }: HeatmapProps) {
+export function Heatmap({ progress, color, onColorChange }: HeatmapProps) {
   const counts = useMemo(() => activityByDate(progress), [progress])
 
   const { weeks, monthLabels, totalDays } = useMemo(() => {
@@ -57,8 +60,33 @@ export function Heatmap({ progress, color }: HeatmapProps) {
 
   return (
     <div className="mb-6 rounded-2xl border border-line bg-elevated p-4 shadow-sm">
-      <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="font-display text-sm font-semibold">Activity</h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <h2 className="font-display text-sm font-semibold">Activity</h2>
+          <div
+            role="group"
+            aria-label="Heatmap color"
+            className="flex items-center gap-1"
+          >
+            {COLOR_ORDER.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => onColorChange(c)}
+                aria-pressed={c === color}
+                aria-label={`${c[0].toUpperCase()}${c.slice(1)} heatmap`}
+                title={`${c[0].toUpperCase()}${c.slice(1)}`}
+                className={cn(
+                  'h-3.5 w-3.5 rounded-full ring-offset-1 ring-offset-elevated transition',
+                  c === color
+                    ? 'ring-2 ring-ink/60'
+                    : 'ring-1 ring-line hover:ring-ink/40',
+                )}
+                style={{ backgroundColor: GOOGLE_COLORS[c] }}
+              />
+            ))}
+          </div>
+        </div>
         <span className="text-xs text-muted">
           {totalDays} action{totalDays === 1 ? '' : 's'} · last 5 months
         </span>
