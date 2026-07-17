@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Confidence,
+  HeatmapColor,
   ProblemProgress,
   Store,
   Theme,
@@ -165,6 +166,10 @@ export function useProgress() {
     setStore((s) => ({ ...s, settings: { ...s.settings, theme } }))
   }, [])
 
+  const setHeatmapColor = useCallback((heatmapColor: HeatmapColor) => {
+    setStore((s) => ({ ...s, settings: { ...s.settings, heatmapColor } }))
+  }, [])
+
   const setDailyGoal = useCallback((n: number) => {
     setStore((s) => ({
       ...s,
@@ -203,6 +208,7 @@ export function useProgress() {
     setDateSolved,
     // settings
     setTheme,
+    setHeatmapColor,
     setDailyGoal,
     markBackedUp,
     // whole-store
