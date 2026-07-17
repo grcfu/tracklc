@@ -304,66 +304,77 @@ export default function App() {
         )}
 
         <DailySuggestions progress={progress} />
-        <StatsRow progress={progress} dailyGoal={api.settings.dailyGoal} />
-        <ReviewQueue progress={progress} onReview={api.markReviewedToday} />
-        <Heatmap
-          progress={progress}
-          color={settings.heatmapColor}
-          onColorChange={api.setHeatmapColor}
-        />
 
-        <div className="mb-6">
-          <TabBar active={tab} onChange={setTab} />
-        </div>
+        <div className="lg:grid lg:grid-cols-[340px_minmax(0,1fr)] lg:items-start lg:gap-8">
+          <aside className="mb-6 space-y-6 lg:mb-0">
+            <StatsRow
+              progress={progress}
+              dailyGoal={api.settings.dailyGoal}
+              layout="stack"
+            />
+            <ReviewQueue progress={progress} onReview={api.markReviewedToday} />
+            <Heatmap
+              progress={progress}
+              color={settings.heatmapColor}
+              onColorChange={api.setHeatmapColor}
+            />
+          </aside>
 
-        {tab === 'company' && (
-          <CompanyBar
-            company={company}
-            onCompanyChange={setCompany}
-            grouping={companyGrouping}
-            onGroupingChange={setCompanyGrouping}
-          />
-        )}
+          <main>
+            <div className="mb-6">
+              <TabBar active={tab} onChange={setTab} />
+            </div>
 
-        <FilterBar
-          filters={filters}
-          onChange={updateFilters}
-          onReset={resetFilters}
-        />
-
-        {groups.length > 0 ? (
-          <div>
-            {groups.map((group) => (
-              <CategorySection
-                key={group.key}
-                title={group.key}
-                problems={group.problems}
-                progress={progress}
-                frequencyOf={frequencyOf}
-                collapsed={collapsed.has(group.key)}
-                onToggleCollapse={toggleCollapse}
-                expandedRows={expanded}
-                handlers={handlers}
+            {tab === 'company' && (
+              <CompanyBar
+                company={company}
+                onCompanyChange={setCompany}
+                grouping={companyGrouping}
+                onGroupingChange={setCompanyGrouping}
               />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-line bg-surface p-10 text-center">
-            <p className="font-display font-semibold text-ink">No matches</p>
-            <p className="mt-1 text-sm text-muted">
-              No problems match your current search and filters.
-            </p>
-            {isFiltering(filters) && (
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="mt-4 rounded-full bg-google-blue px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-              >
-                Clear filters
-              </button>
             )}
-          </div>
-        )}
+
+            <FilterBar
+              filters={filters}
+              onChange={updateFilters}
+              onReset={resetFilters}
+            />
+
+            {groups.length > 0 ? (
+              <div>
+                {groups.map((group) => (
+                  <CategorySection
+                    key={group.key}
+                    title={group.key}
+                    problems={group.problems}
+                    progress={progress}
+                    frequencyOf={frequencyOf}
+                    collapsed={collapsed.has(group.key)}
+                    onToggleCollapse={toggleCollapse}
+                    expandedRows={expanded}
+                    handlers={handlers}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-line bg-surface p-10 text-center">
+                <p className="font-display font-semibold text-ink">No matches</p>
+                <p className="mt-1 text-sm text-muted">
+                  No problems match your current search and filters.
+                </p>
+                {isFiltering(filters) && (
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="mt-4 rounded-full bg-google-blue px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            )}
+          </main>
+        </div>
 
         <p className="mt-10 text-center text-xs text-muted">
           Press{' '}
