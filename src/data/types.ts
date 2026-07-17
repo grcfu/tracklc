@@ -57,9 +57,14 @@ export interface ProblemProgress {
 
 export type Theme = 'light' | 'dark'
 
+/** The four Google brand colors, used as selectable heatmap accents. */
+export type HeatmapColor = 'blue' | 'red' | 'yellow' | 'green'
+
 export interface Settings {
   theme: Theme
   dailyGoal: number
+  /** Accent color for the activity heatmap (defaults to green). */
+  heatmapColor: HeatmapColor
   lastBackup?: string
 }
 

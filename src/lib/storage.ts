@@ -9,7 +9,7 @@ export function defaultStore(): Store {
   return {
     version: SCHEMA_VERSION,
     progress: {},
-    settings: { theme: systemTheme(), dailyGoal: 3 },
+    settings: { theme: systemTheme(), dailyGoal: 3, heatmapColor: 'green' },
   }
 }
 
