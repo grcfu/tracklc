@@ -306,7 +306,7 @@ export default function App() {
         <DailySuggestions progress={progress} />
 
         <div className="lg:grid lg:grid-cols-[340px_minmax(0,1fr)] lg:items-start lg:gap-8">
-          <aside className="mb-6 space-y-6 lg:mb-0">
+          <aside className="mb-6 space-y-6 lg:sticky lg:top-8 lg:mb-0 lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:pr-1">
             <StatsRow
               progress={progress}
               dailyGoal={api.settings.dailyGoal}
