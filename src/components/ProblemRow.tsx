@@ -79,11 +79,12 @@ function ProblemRowImpl({
         aria-label={`${problem.name} — ${solved ? `rated ${confidence} of 5` : 'unattempted'}. Toggle details.`}
         onClick={toggle}
         onKeyDown={onRowKey}
-        className="flex cursor-pointer items-center gap-3 px-3 py-2.5 sm:px-4"
+        className="flex cursor-pointer items-center gap-2.5 px-3 py-1 sm:px-4"
       >
         <div onClick={(e) => e.stopPropagation()} className="shrink-0">
           <StarRating
             value={confidence}
+            size={16}
             onChange={(v) => onSetConfidence(id, v)}
             label={`Confidence for ${problem.name}`}
           />
@@ -96,7 +97,7 @@ function ProblemRowImpl({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="group inline-flex items-center gap-1 truncate font-medium text-ink hover:text-google-blue hover:underline"
+              className="group inline-flex items-center gap-1 truncate font-medium leading-tight text-ink hover:text-google-blue hover:underline"
               title={`Open ${problem.name} on LeetCode`}
             >
               <span className="truncate">{problem.name}</span>
@@ -107,7 +108,7 @@ function ProblemRowImpl({
             </a>
           </div>
           {solved && (
-            <p className="mt-0.5 truncate text-xs text-muted">
+            <p className="mt-px truncate text-xs leading-tight text-muted">
               Solved {progress?.dateSolved ? relativeDays(progress.dateSolved) : ''}
               {attempts > 0 && ` · ${attempts} attempt${attempts > 1 ? 's' : ''}`}
             </p>
@@ -150,17 +151,17 @@ function ProblemRowImpl({
           aria-pressed={flagged}
           aria-label={flagged ? 'Remove bookmark' : 'Bookmark this problem'}
           className={cn(
-            'shrink-0 rounded-full p-1.5 transition-colors',
+            'shrink-0 rounded-full p-1 transition-colors',
             flagged
               ? 'text-google-blue'
               : 'text-line hover:text-muted',
           )}
         >
-          <Flag size={16} className={cn(flagged && 'fill-google-blue')} />
+          <Flag size={15} className={cn(flagged && 'fill-google-blue')} />
         </button>
 
         <ChevronDown
-          size={18}
+          size={16}
           className={cn(
             'shrink-0 text-muted transition-transform duration-200',
             expanded && 'rotate-180',

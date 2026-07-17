@@ -72,7 +72,7 @@ export function CategorySection({
       </button>
 
       {!collapsed && (
-        <ul className="mt-1.5 space-y-2 pl-1">
+        <ul className="mt-1.5 space-y-1.5 pl-1">
           {problems.map((problem) => (
             <ProblemRow
               key={problem.id}
