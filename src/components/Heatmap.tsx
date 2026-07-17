@@ -59,7 +59,7 @@ export function Heatmap({ progress, color, onColorChange }: HeatmapProps) {
   }, [counts])
 
   return (
-    <div className="mb-6 rounded-2xl border border-line bg-elevated p-4 shadow-sm">
+    <div className="rounded-2xl border border-line bg-elevated p-4 shadow-sm">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <h2 className="font-display text-sm font-semibold">Activity</h2>

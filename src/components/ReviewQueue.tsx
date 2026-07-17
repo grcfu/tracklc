@@ -31,7 +31,7 @@ export function ReviewQueue({ progress, onReview }: ReviewQueueProps) {
   const visible = showAll ? due : due.slice(0, MAX_VISIBLE)
 
   return (
-    <section className="mb-6 overflow-hidden rounded-2xl border border-google-blue/30 bg-elevated shadow-sm">
+    <section className="overflow-hidden rounded-2xl border border-google-blue/30 bg-elevated shadow-sm">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
