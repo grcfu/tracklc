@@ -57,7 +57,7 @@ export function ShareCard({ progress, date }: ShareCardProps) {
             🔥 <span className="font-medium text-ink">{streak}-day</span> streak
           </>
         ) : (
-          'Practicing with spaced repetition on LeetTrack.'
+          'Practicing with spaced repetition on TrackLC.'
         )}
       </p>
     </div>

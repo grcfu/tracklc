@@ -1,4 +1,4 @@
-# LeetTrack — Personal LeetCode Tracker
+# TrackLC — Personal LeetCode Tracker
 
 A lightweight, fast, **fully client-side** LeetCode tracker. No backend, no login, no external APIs. All your data lives in your browser's `localStorage`.
 

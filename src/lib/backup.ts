@@ -3,7 +3,7 @@ import { todayISO } from './dates'
 
 /** Filename for an exported backup, dated so backups sort chronologically. */
 export function backupFilename(): string {
-  return `leettrack-backup-${todayISO()}.json`
+  return `tracklc-backup-${todayISO()}.json`
 }
 
 /** Trigger a client-side download of the store as pretty-printed JSON. */

@@ -1,6 +1,6 @@
 import { LOGO_COLORS } from '../lib/ui'
 
-const WORD = 'LeetTrack'
+const WORD = 'TrackLC'
 
 /** The wordmark: each letter in a cycling Google color, like the Google logo. */
 export function Logo({ className = '' }: { className?: string }) {
