@@ -241,6 +241,20 @@ export default function App() {
     [problems, progress],
   )
 
+  // Open every solved problem's detail panel at once (and un-collapse sections).
+  const expandAllSolved = useCallback(() => {
+    setCollapsed(new Set())
+    setExpanded(
+      new Set(
+        problems
+          .filter((p) => progress[p.id]?.confidence != null)
+          .map((p) => p.id),
+      ),
+    )
+  }, [problems, progress])
+
+  const collapseAll = useCallback(() => setExpanded(new Set()), [])
+
   // ── Global keyboard shortcuts (disabled behind a snapshot or open dialog) ──
   useShortcuts(
     {
@@ -402,6 +416,16 @@ export default function App() {
               onChange={updateFilters}
               onReset={resetFilters}
             />
+
+            <div className="mb-3 flex justify-end">
+              <button
+                type="button"
+                onClick={expanded.size ? collapseAll : expandAllSolved}
+                className="rounded-full border border-line px-3 py-1 text-xs font-medium text-muted transition-colors hover:text-ink"
+              >
+                {expanded.size ? 'Collapse all' : 'Expand all solved'}
+              </button>
+            </div>
 
             {groups.length > 0 ? (
               <div>

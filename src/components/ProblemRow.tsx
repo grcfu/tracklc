@@ -214,122 +214,124 @@ function LogPanel({
   const history = progress?.confidenceHistory ?? []
 
   return (
-    <div className="animate-fade-in border-t border-line bg-surface px-3 py-4 sm:px-4">
-      <div className="grid gap-5 sm:grid-cols-2">
-        {/* Confidence + status */}
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
-            Confidence {solved ? '(solved)' : '(rate to mark solved)'}
-          </label>
-          <div className="flex items-center gap-3">
-            <StarRating
-              value={confidence}
-              size={24}
-              onChange={(v) => onSetConfidence(id, v)}
-              label={`Confidence for ${problem.name}`}
-            />
-            {solved && (
-              <button
-                type="button"
-                onClick={() => onClearRating(id)}
-                className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted hover:bg-line/40 hover:text-ink"
-              >
-                <RotateCcw size={13} /> Clear
-              </button>
-            )}
+    <div className="animate-fade-in border-t border-line bg-surface px-3 py-3 sm:px-4">
+      <div className="grid gap-x-5 gap-y-3 sm:grid-cols-2">
+        {/* Left: rating, date + attempts, and every dated attempt */}
+        <div className="space-y-3">
+          {/* Confidence + status */}
+          <div>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
+              Confidence {solved ? '(solved)' : '(rate to mark solved)'}
+            </label>
+            <div className="flex items-center gap-3">
+              <StarRating
+                value={confidence}
+                size={20}
+                onChange={(v) => onSetConfidence(id, v)}
+                label={`Confidence for ${problem.name}`}
+              />
+              {solved && (
+                <button
+                  type="button"
+                  onClick={() => onClearRating(id)}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted hover:bg-line/40 hover:text-ink"
+                >
+                  <RotateCcw size={13} /> Clear
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Date solved + attempts on one row */}
+          <div className="flex flex-wrap items-end gap-4">
+            <div>
+              <label
+                htmlFor={`date-${id}`}
+                className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"
+              >
+                Date solved
+              </label>
+              <input
+                id={`date-${id}`}
+                type="date"
+                max={todayISO()}
+                disabled={!solved}
+                value={progress?.dateSolved ?? todayISO()}
+                onChange={(e) => onSetDateSolved(id, e.target.value)}
+                className="rounded-lg border border-line bg-elevated px-3 py-1.5 text-sm text-ink disabled:opacity-50"
+              />
+            </div>
+            <div>
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
+                Attempts
+              </span>
+              <div className="inline-flex items-center gap-3 rounded-lg border border-line bg-elevated px-2 py-1">
+                <button
+                  type="button"
+                  onClick={() => onSetAttempts(id, attempts - 1)}
+                  disabled={attempts <= 0}
+                  aria-label="Decrease attempts"
+                  className="rounded-md p-1.5 text-muted hover:bg-line/40 hover:text-ink disabled:opacity-40"
+                >
+                  <Minus size={15} />
+                </button>
+                <span className="min-w-[1.5rem] text-center font-display font-semibold tabular-nums">
+                  {attempts}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onSetAttempts(id, attempts + 1)}
+                  aria-label="Increase attempts"
+                  className="rounded-md p-1.5 text-muted hover:bg-line/40 hover:text-ink"
+                >
+                  <Plus size={15} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Attempt log — every dated session, most recent last */}
+          {history.length > 0 && (
+            <div>
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
+                Dates solved ({history.length})
+              </span>
+              <ul className="flex flex-wrap gap-1.5">
+                {history.map((pt, i) => (
+                  <li
+                    key={i}
+                    className="inline-flex items-center gap-1 rounded-full bg-line/50 px-2 py-0.5 text-xs text-muted"
+                  >
+                    <span
+                      className="font-semibold"
+                      style={{ color: CONFIDENCE_COLOR[pt.value] }}
+                    >
+                      {pt.value}★
+                    </span>
+                    <span>{formatDate(pt.date)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
-        {/* Date solved */}
-        <div>
-          <label
-            htmlFor={`date-${id}`}
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted"
-          >
-            Date solved
-          </label>
-          <input
-            id={`date-${id}`}
-            type="date"
-            max={todayISO()}
-            disabled={!solved}
-            value={progress?.dateSolved ?? todayISO()}
-            onChange={(e) => onSetDateSolved(id, e.target.value)}
-            className="w-full rounded-lg border border-line bg-elevated px-3 py-2 text-sm text-ink disabled:opacity-50"
-          />
-        </div>
-
-        {/* Notes */}
-        <div className="sm:col-span-2">
+        {/* Right: notes fill the column height */}
+        <div className="flex flex-col">
           <label
             htmlFor={`notes-${id}`}
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted"
+            className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"
           >
             Notes — key insight / pattern / mistake to avoid
           </label>
           <textarea
             id={`notes-${id}`}
-            rows={3}
             defaultValue={progress?.notes ?? ''}
             onBlur={(e) => onSetNotes(id, e.target.value)}
             placeholder="e.g. Hash map, one pass. Watch for using the same element twice."
-            className="w-full resize-y rounded-lg border border-line bg-elevated px-3 py-2 text-sm text-ink placeholder:text-muted/70"
+            className="min-h-[6rem] w-full flex-1 resize-y rounded-lg border border-line bg-elevated px-3 py-2 text-sm text-ink placeholder:text-muted/70"
           />
         </div>
-
-        {/* Attempts */}
-        <div>
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
-            Attempts
-          </span>
-          <div className="inline-flex items-center gap-3 rounded-lg border border-line bg-elevated px-2 py-1">
-            <button
-              type="button"
-              onClick={() => onSetAttempts(id, attempts - 1)}
-              disabled={attempts <= 0}
-              aria-label="Decrease attempts"
-              className="rounded-md p-1.5 text-muted hover:bg-line/40 hover:text-ink disabled:opacity-40"
-            >
-              <Minus size={15} />
-            </button>
-            <span className="min-w-[1.5rem] text-center font-display font-semibold tabular-nums">
-              {attempts}
-            </span>
-            <button
-              type="button"
-              onClick={() => onSetAttempts(id, attempts + 1)}
-              aria-label="Increase attempts"
-              className="rounded-md p-1.5 text-muted hover:bg-line/40 hover:text-ink"
-            >
-              <Plus size={15} />
-            </button>
-          </div>
-        </div>
-
-        {/* Attempt log — every dated session, most recent last */}
-        {history.length > 0 && (
-          <div className="sm:col-span-2">
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
-              Attempt log ({history.length})
-            </span>
-            <ul className="flex flex-wrap gap-1.5">
-              {history.map((pt, i) => (
-                <li
-                  key={i}
-                  className="inline-flex items-center gap-1 rounded-full bg-line/50 px-2 py-0.5 text-xs text-muted"
-                >
-                  <span
-                    className="font-semibold"
-                    style={{ color: CONFIDENCE_COLOR[pt.value] }}
-                  >
-                    {pt.value}★
-                  </span>
-                  <span>{formatDate(pt.date)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     </div>
   )
