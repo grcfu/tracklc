@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Star } from 'lucide-react'
 import type { Confidence } from '../data/types'
-import { cn, clamp } from '../lib/ui'
+import { clamp, cn, CONFIDENCE_COLOR } from '../lib/ui'
 
 interface StarRatingProps {
   /** Current rating, or 0 when unattempted. */
@@ -28,6 +28,7 @@ export function StarRating({
   const display = hover || value
   const active = value || 1
   const interactive = !readOnly && !!onChange
+  const fillColor = display > 0 ? CONFIDENCE_COLOR[display as Confidence] : undefined
 
   const move = (e: React.KeyboardEvent, star: number) => {
     if (!interactive) return
@@ -72,12 +73,8 @@ export function StarRating({
             <Star
               size={size}
               strokeWidth={2}
-              className={cn(
-                'transition-colors',
-                filled
-                  ? 'fill-google-yellow text-google-yellow'
-                  : 'fill-transparent text-line',
-              )}
+              className={cn('transition-colors', !filled && 'fill-transparent text-line')}
+              style={filled ? { color: fillColor, fill: fillColor } : undefined}
             />
           </button>
         )

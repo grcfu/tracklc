@@ -1,4 +1,4 @@
-import type { Difficulty, HeatmapColor } from '../data/types'
+import type { Confidence, Difficulty, HeatmapColor } from '../data/types'
 
 /** Tiny classnames joiner. */
 export function cn(
@@ -16,6 +16,15 @@ export const DIFFICULTY_BADGE: Record<Difficulty, string> = {
 
 /** Alternating Google colors for the wordmark, cycled per letter. */
 export const LOGO_COLORS = ['#4285F4', '#EA4335', '#FBBC04', '#34A853']
+
+/** Pastel red→green scale for confidence stars (1 = shaky, 5 = solid). */
+export const CONFIDENCE_COLOR: Record<Confidence, string> = {
+  1: '#F28B82', // soft red
+  2: '#F7A76C', // soft orange
+  3: '#FDD663', // soft yellow
+  4: '#B4DC7F', // light green
+  5: '#81C995', // green
+}
 
 export const DIFFICULTY_ORDER: Difficulty[] = ['Easy', 'Medium', 'Hard']
 
