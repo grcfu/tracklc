@@ -8,7 +8,7 @@ import {
   RotateCcw,
 } from 'lucide-react'
 import type { Confidence, Frequency, Problem, ProblemProgress } from '../data/types'
-import { cn, DIFFICULTY_BADGE } from '../lib/ui'
+import { cn, CONFIDENCE_COLOR, DIFFICULTY_BADGE } from '../lib/ui'
 import { formatDate, relativeDays, todayISO } from '../lib/dates'
 import { StarRating } from './StarRating'
 
@@ -306,23 +306,25 @@ function LogPanel({
           </div>
         </div>
 
-        {/* Confidence history */}
+        {/* Attempt log — every dated session, most recent last */}
         {history.length > 0 && (
-          <div>
+          <div className="sm:col-span-2">
             <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
-              Confidence history
+              Attempt log ({history.length})
             </span>
             <ul className="flex flex-wrap gap-1.5">
-              {history.slice(-8).map((pt, i) => (
+              {history.map((pt, i) => (
                 <li
                   key={i}
                   className="inline-flex items-center gap-1 rounded-full bg-line/50 px-2 py-0.5 text-xs text-muted"
-                  title={formatDate(pt.date)}
                 >
-                  <span className="font-semibold text-google-yellow">
+                  <span
+                    className="font-semibold"
+                    style={{ color: CONFIDENCE_COLOR[pt.value] }}
+                  >
                     {pt.value}★
                   </span>
-                  <span>{relativeDays(pt.date)}</span>
+                  <span>{formatDate(pt.date)}</span>
                 </li>
               ))}
             </ul>
