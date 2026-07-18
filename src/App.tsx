@@ -112,6 +112,15 @@ export default function App() {
     showToast('Progress reset.', () => api.replaceStore(prev))
   }, [api, showToast])
 
+  const doRemoveAttempt = useCallback(
+    (id: string, index: number) => {
+      const prev = api.store
+      api.removeAttempt(id, index)
+      showToast('Attempt removed.', () => api.replaceStore(prev))
+    },
+    [api, showToast],
+  )
+
   // ── Snapshot sharing: open the tracker as a read-only view from a link ─────
   const [snapshot, setSnapshot] = useState<Snapshot | null>(() =>
     decodeSnapshot(window.location.hash),
@@ -190,6 +199,7 @@ export default function App() {
       onSetAttempts: api.setAttempts,
       onToggleFlag: api.toggleFlag,
       onSetDateSolved: api.setDateSolved,
+      onRemoveAttempt: doRemoveAttempt,
     }),
     [
       toggleExpand,
@@ -199,6 +209,7 @@ export default function App() {
       api.setAttempts,
       api.toggleFlag,
       api.setDateSolved,
+      doRemoveAttempt,
     ],
   )
 

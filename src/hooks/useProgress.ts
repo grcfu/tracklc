@@ -125,6 +125,35 @@ export function useProgress() {
     [patchProblem],
   )
 
+  /** Remove one attempt from the history, re-deriving solve dates + confidence. */
+  const removeAttempt = useCallback(
+    (id: string, index: number) => {
+      patchProblem(id, (prev) => {
+        const hist = (prev.confidenceHistory ?? []).slice()
+        if (index < 0 || index >= hist.length) return prev
+        hist.splice(index, 1)
+        if (hist.length === 0) {
+          // Last attempt gone → un-solve, but keep notes/attempts/flag.
+          return omitKeys(prev, [
+            'confidence',
+            'dateSolved',
+            'lastReviewed',
+            'confidenceHistory',
+          ])
+        }
+        const dates = hist.map((h) => h.date).sort()
+        return {
+          ...prev,
+          confidence: hist[hist.length - 1].value,
+          dateSolved: dates[0],
+          lastReviewed: dates[dates.length - 1],
+          confidenceHistory: hist,
+        }
+      })
+    },
+    [patchProblem],
+  )
+
   const setNotes = useCallback(
     (id: string, notes: string) => {
       patchProblem(id, (prev) =>
@@ -202,6 +231,7 @@ export function useProgress() {
     setConfidence,
     clearRating,
     markReviewedToday,
+    removeAttempt,
     setNotes,
     setAttempts,
     toggleFlag,

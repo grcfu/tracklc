@@ -6,6 +6,7 @@ import {
   Minus,
   Plus,
   RotateCcw,
+  X,
 } from 'lucide-react'
 import type { Confidence, Frequency, Problem, ProblemProgress } from '../data/types'
 import { cn, CONFIDENCE_COLOR, DIFFICULTY_BADGE } from '../lib/ui'
@@ -32,6 +33,7 @@ export interface RowHandlers {
   onSetAttempts: (id: string, n: number) => void
   onToggleFlag: (id: string) => void
   onSetDateSolved: (id: string, date: string) => void
+  onRemoveAttempt: (id: string, index: number) => void
 }
 
 export interface ProblemRowProps extends RowHandlers {
@@ -53,6 +55,7 @@ function ProblemRowImpl({
   onSetAttempts,
   onToggleFlag,
   onSetDateSolved,
+  onRemoveAttempt,
 }: ProblemRowProps) {
   const { id } = problem
   const confidence = progress?.confidence ?? 0
@@ -179,6 +182,7 @@ function ProblemRowImpl({
           onSetAttempts={onSetAttempts}
           onToggleFlag={onToggleFlag}
           onSetDateSolved={onSetDateSolved}
+          onRemoveAttempt={onRemoveAttempt}
         />
       )}
     </li>
@@ -196,6 +200,7 @@ interface LogPanelProps {
   onSetAttempts: (id: string, n: number) => void
   onToggleFlag: (id: string) => void
   onSetDateSolved: (id: string, date: string) => void
+  onRemoveAttempt: (id: string, index: number) => void
 }
 
 function LogPanel({
@@ -206,6 +211,7 @@ function LogPanel({
   onSetNotes,
   onSetAttempts,
   onSetDateSolved,
+  onRemoveAttempt,
 }: LogPanelProps) {
   const { id } = problem
   const confidence = progress?.confidence ?? 0
@@ -290,7 +296,27 @@ function LogPanel({
             </div>
           </div>
 
-          {/* Attempt log — every dated session, most recent last */}
+        </div>
+
+        {/* Right: notes + dates solved (two items to balance the columns) */}
+        <div className="space-y-3">
+          <div>
+            <label
+              htmlFor={`notes-${id}`}
+              className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"
+            >
+              Notes — key insight / pattern / mistake to avoid
+            </label>
+            <textarea
+              id={`notes-${id}`}
+              rows={3}
+              defaultValue={progress?.notes ?? ''}
+              onBlur={(e) => onSetNotes(id, e.target.value)}
+              placeholder="e.g. Hash map, one pass. Watch for using the same element twice."
+              className="w-full resize-y rounded-lg border border-line bg-elevated px-3 py-2 text-sm text-ink placeholder:text-muted/70"
+            />
+          </div>
+
           {history.length > 0 && (
             <div>
               <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
@@ -300,7 +326,7 @@ function LogPanel({
                 {history.map((pt, i) => (
                   <li
                     key={i}
-                    className="inline-flex items-center gap-1 rounded-full bg-line/50 px-2 py-0.5 text-xs text-muted"
+                    className="inline-flex items-center gap-1 rounded-full bg-line/50 py-0.5 pl-2 pr-1 text-xs text-muted"
                   >
                     <span
                       className="font-semibold"
@@ -309,28 +335,19 @@ function LogPanel({
                       {pt.value}★
                     </span>
                     <span>{formatDate(pt.date)}</span>
+                    <button
+                      type="button"
+                      onClick={() => onRemoveAttempt(id, i)}
+                      aria-label={`Remove attempt on ${formatDate(pt.date)}`}
+                      className="ml-0.5 rounded-full p-0.5 text-muted/60 transition-colors hover:bg-line hover:text-google-red"
+                    >
+                      <X size={11} />
+                    </button>
                   </li>
                 ))}
               </ul>
             </div>
           )}
-        </div>
-
-        {/* Right: notes fill the column height */}
-        <div className="flex flex-col">
-          <label
-            htmlFor={`notes-${id}`}
-            className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"
-          >
-            Notes — key insight / pattern / mistake to avoid
-          </label>
-          <textarea
-            id={`notes-${id}`}
-            defaultValue={progress?.notes ?? ''}
-            onBlur={(e) => onSetNotes(id, e.target.value)}
-            placeholder="e.g. Hash map, one pass. Watch for using the same element twice."
-            className="min-h-[6rem] w-full flex-1 resize-y rounded-lg border border-line bg-elevated px-3 py-2 text-sm text-ink placeholder:text-muted/70"
-          />
         </div>
       </div>
     </div>
