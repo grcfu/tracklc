@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  ClipboardList,
   Download,
   Minus,
   Plus,
@@ -15,6 +16,7 @@ interface SettingsMenuProps {
   onSetDailyGoal: (n: number) => void
   lastBackup?: string
   onExport: () => void
+  onCopyForSheets: () => void
   onImport: (file: File) => void
   onReset: () => void
 }
@@ -30,6 +32,7 @@ export function SettingsMenu({
   onSetDailyGoal,
   lastBackup,
   onExport,
+  onCopyForSheets,
   onImport,
   onReset,
 }: SettingsMenuProps) {
@@ -141,6 +144,18 @@ export function SettingsMenu({
             >
               <Download size={16} className="text-muted" />
               Export backup (.json)
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                onCopyForSheets()
+                setOpen(false)
+              }}
+              className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm text-ink transition-colors hover:bg-surface"
+            >
+              <ClipboardList size={16} className="text-muted" />
+              Copy for Google Sheets
             </button>
             <button
               type="button"
