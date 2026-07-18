@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CalendarDays, Share2 } from 'lucide-react'
+import { AlertTriangle, CalendarDays, Share2, X } from 'lucide-react'
 import type { CompanyId, Frequency, ListId } from './data/types'
 import { applyTheme } from './lib/theme'
-import { downloadStore, readFileText } from './lib/backup'
+import { downloadStore, readFileText, sheetTSV } from './lib/backup'
 import { validateImport } from './lib/storage'
+import { daysSince } from './lib/dates'
 import { decodeSnapshot, snapshotProgress, type Snapshot } from './lib/share'
 import {
   companyProblems,
@@ -69,6 +70,15 @@ export default function App() {
     showToast('Backup downloaded.')
   }, [api, showToast])
 
+  const doCopyForSheets = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(sheetTSV(progress))
+      showToast('Copied — paste into your Google Sheet.')
+    } catch {
+      showToast('Could not access the clipboard.')
+    }
+  }, [progress, showToast])
+
   const doImport = useCallback(
     async (file: File) => {
       try {
@@ -109,6 +119,7 @@ export default function App() {
   const [showShare, setShowShare] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
   const [showLog, setShowLog] = useState(false)
+  const [backupDismissed, setBackupDismissed] = useState(false)
 
   useEffect(() => {
     const onHashChange = () => setSnapshot(decodeSnapshot(window.location.hash))
@@ -251,6 +262,13 @@ export default function App() {
   const label =
     tab === 'company' ? `${COMPANY_META[company].label} · Frequently asked` : LIST_LABELS[tab]
 
+  // Nudge to back up when there's progress and it's been >7 days (or never).
+  const daysSinceBackup = settings.lastBackup ? daysSince(settings.lastBackup) : Infinity
+  const showBackupNudge =
+    !backupDismissed &&
+    Object.keys(progress).length > 0 &&
+    daysSinceBackup >= 7
+
   // A snapshot link takes over the whole screen as a read-only view.
   if (snapshot) {
     return (
@@ -295,6 +313,7 @@ export default function App() {
                 onSetDailyGoal={api.setDailyGoal}
                 lastBackup={settings.lastBackup}
                 onExport={doExport}
+                onCopyForSheets={doCopyForSheets}
                 onImport={doImport}
                 onReset={doReset}
               />
@@ -309,6 +328,41 @@ export default function App() {
           >
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />
             <span>{api.saveError}</span>
+          </div>
+        )}
+
+        {showBackupNudge && (
+          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-google-yellow/50 bg-google-yellow/10 px-4 py-3 text-sm">
+            <AlertTriangle size={16} className="shrink-0 text-amber-600 dark:text-google-yellow" />
+            <span className="text-ink">
+              {settings.lastBackup
+                ? `It's been ${daysSinceBackup} days since your last backup.`
+                : `Your progress lives only in this browser — back it up so you don't lose it.`}
+            </span>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={doExport}
+                className="rounded-full bg-google-blue px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+              >
+                Export now
+              </button>
+              <button
+                type="button"
+                onClick={doCopyForSheets}
+                className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface"
+              >
+                Copy for Sheets
+              </button>
+              <button
+                type="button"
+                onClick={() => setBackupDismissed(true)}
+                aria-label="Dismiss"
+                className="rounded-full p-1 text-muted hover:text-ink"
+              >
+                <X size={15} />
+              </button>
+            </div>
           </div>
         )}
 
