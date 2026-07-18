@@ -17,13 +17,17 @@ export const DIFFICULTY_BADGE: Record<Difficulty, string> = {
 /** Alternating Google colors for the wordmark, cycled per letter. */
 export const LOGO_COLORS = ['#4285F4', '#EA4335', '#FBBC04', '#34A853']
 
-/** Pastel red→green scale for confidence stars (1 = shaky, 5 = solid). */
+/**
+ * Confidence star scale built from the page's own Google palette:
+ * 1★ = google-red, 3★ = google-yellow, 5★ = google-green, with 2★/4★
+ * interpolated across the red→yellow→green ramp.
+ */
 export const CONFIDENCE_COLOR: Record<Confidence, string> = {
-  1: '#F28B82', // soft red
-  2: '#F7A76C', // soft orange
-  3: '#FDD663', // soft yellow
-  4: '#B4DC7F', // light green
-  5: '#81C995', // green
+  1: '#EA4335', // google-red
+  2: '#F48FA0', // light red / pink
+  3: '#FBBC04', // google-yellow
+  4: '#98B22C', // yellow → green
+  5: '#34A853', // google-green
 }
 
 export const DIFFICULTY_ORDER: Difficulty[] = ['Easy', 'Medium', 'Hard']
