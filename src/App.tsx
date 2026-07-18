@@ -77,9 +77,18 @@ export default function App() {
           showToast(result.error)
           return
         }
+        // Merge: add imported problems to existing data (imported wins on
+        // conflict), keeping the current settings. Undo restores the prior store.
         const prev = api.store
-        api.replaceStore(result.store)
-        showToast('Progress imported.', () => api.replaceStore(prev))
+        const added = Object.keys(result.store.progress).length
+        api.replaceStore({
+          ...prev,
+          progress: { ...prev.progress, ...result.store.progress },
+        })
+        showToast(
+          `Imported ${added} problem${added === 1 ? '' : 's'} (merged).`,
+          () => api.replaceStore(prev),
+        )
       } catch {
         showToast('That file could not be read as JSON.')
       }
