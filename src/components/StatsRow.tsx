@@ -45,7 +45,7 @@ export function StatsRow({ progress, dailyGoal, layout = 'grid' }: StatsRowProps
       {/* Solved by difficulty */}
       <Card>
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-          Solved
+          Total solved
         </p>
         <p className="mt-1 font-display text-2xl font-bold tabular-nums">
           {total}

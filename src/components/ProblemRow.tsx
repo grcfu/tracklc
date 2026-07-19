@@ -1,13 +1,5 @@
 import { memo } from 'react'
-import {
-  ChevronDown,
-  ExternalLink,
-  Flag,
-  Minus,
-  Plus,
-  RotateCcw,
-  X,
-} from 'lucide-react'
+import { ChevronDown, ExternalLink, Flag, RotateCcw, X } from 'lucide-react'
 import type { Confidence, Frequency, Problem, ProblemProgress } from '../data/types'
 import { cn, CONFIDENCE_COLOR, DIFFICULTY_BADGE } from '../lib/ui'
 import { formatDate, relativeDays, todayISO } from '../lib/dates'
@@ -30,7 +22,6 @@ export interface RowHandlers {
   onSetConfidence: (id: string, v: Confidence) => void
   onClearRating: (id: string) => void
   onSetNotes: (id: string, notes: string) => void
-  onSetAttempts: (id: string, n: number) => void
   onToggleFlag: (id: string) => void
   onSetDateSolved: (id: string, date: string) => void
   onRemoveAttempt: (id: string, index: number) => void
@@ -52,7 +43,6 @@ function ProblemRowImpl({
   onSetConfidence,
   onClearRating,
   onSetNotes,
-  onSetAttempts,
   onToggleFlag,
   onSetDateSolved,
   onRemoveAttempt,
@@ -61,7 +51,7 @@ function ProblemRowImpl({
   const confidence = progress?.confidence ?? 0
   const solved = confidence > 0
   const flagged = !!progress?.flagged
-  const attempts = progress?.attempts ?? 0
+  const attempts = progress?.confidenceHistory?.length ?? 0
   const needsReview = solved && confidence <= 3
 
   const toggle = () => onToggleExpand(id)
@@ -179,7 +169,6 @@ function ProblemRowImpl({
           onSetConfidence={onSetConfidence}
           onClearRating={onClearRating}
           onSetNotes={onSetNotes}
-          onSetAttempts={onSetAttempts}
           onToggleFlag={onToggleFlag}
           onSetDateSolved={onSetDateSolved}
           onRemoveAttempt={onRemoveAttempt}
@@ -197,7 +186,6 @@ interface LogPanelProps {
   onSetConfidence: (id: string, v: Confidence) => void
   onClearRating: (id: string) => void
   onSetNotes: (id: string, notes: string) => void
-  onSetAttempts: (id: string, n: number) => void
   onToggleFlag: (id: string) => void
   onSetDateSolved: (id: string, date: string) => void
   onRemoveAttempt: (id: string, index: number) => void
@@ -209,14 +197,12 @@ function LogPanel({
   onSetConfidence,
   onClearRating,
   onSetNotes,
-  onSetAttempts,
   onSetDateSolved,
   onRemoveAttempt,
 }: LogPanelProps) {
   const { id } = problem
   const confidence = progress?.confidence ?? 0
   const solved = confidence > 0
-  const attempts = progress?.attempts ?? 0
   const history = progress?.confidenceHistory ?? []
 
   return (
@@ -248,52 +234,23 @@ function LogPanel({
             </div>
           </div>
 
-          {/* Date solved + attempts on one row */}
-          <div className="flex flex-wrap items-end gap-4">
-            <div>
-              <label
-                htmlFor={`date-${id}`}
-                className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"
-              >
-                Date solved
-              </label>
-              <input
-                id={`date-${id}`}
-                type="date"
-                max={todayISO()}
-                disabled={!solved}
-                value={progress?.dateSolved ?? todayISO()}
-                onChange={(e) => onSetDateSolved(id, e.target.value)}
-                className="rounded-lg border border-line bg-elevated px-3 py-1.5 text-sm text-ink disabled:opacity-50"
-              />
-            </div>
-            <div>
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
-                Attempts
-              </span>
-              <div className="inline-flex items-center gap-3 rounded-lg border border-line bg-elevated px-2 py-1">
-                <button
-                  type="button"
-                  onClick={() => onSetAttempts(id, attempts - 1)}
-                  disabled={attempts <= 0}
-                  aria-label="Decrease attempts"
-                  className="rounded-md p-1.5 text-muted hover:bg-line/40 hover:text-ink disabled:opacity-40"
-                >
-                  <Minus size={15} />
-                </button>
-                <span className="min-w-[1.5rem] text-center font-display font-semibold tabular-nums">
-                  {attempts}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => onSetAttempts(id, attempts + 1)}
-                  aria-label="Increase attempts"
-                  className="rounded-md p-1.5 text-muted hover:bg-line/40 hover:text-ink"
-                >
-                  <Plus size={15} />
-                </button>
-              </div>
-            </div>
+          {/* First solved */}
+          <div>
+            <label
+              htmlFor={`date-${id}`}
+              className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"
+            >
+              First solved
+            </label>
+            <input
+              id={`date-${id}`}
+              type="date"
+              max={todayISO()}
+              disabled={!solved}
+              value={progress?.dateSolved ?? todayISO()}
+              onChange={(e) => onSetDateSolved(id, e.target.value)}
+              className="rounded-lg border border-line bg-elevated px-3 py-1.5 text-sm text-ink disabled:opacity-50"
+            />
           </div>
 
         </div>

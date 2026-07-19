@@ -19,7 +19,7 @@ const MAX_VISIBLE = 20
  * Re-rating a problem here (or hitting "Reviewed") bumps its review date.
  */
 export function ReviewQueue({ progress, onReview }: ReviewQueueProps) {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   const [showAll, setShowAll] = useState(false)
 
   const due = useMemo(() => {

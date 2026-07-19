@@ -22,21 +22,53 @@ interface SnapshotEntry {
 
 const HASH_PREFIX = '#s='
 
-// ── UTF-8 safe base64url (works for any characters, chunked for large input) ──
+// ── base64url over raw bytes ─────────────────────────────────────────────────
 
-function utf8ToBase64Url(str: string): string {
-  const bytes = new TextEncoder().encode(str)
+function bytesToBase64Url(bytes: Uint8Array): string {
   let bin = ''
   for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i])
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
-function base64UrlToUtf8(b64url: string): string {
+function base64UrlToBytes(b64url: string): Uint8Array {
   const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/')
   const bin = atob(b64)
   const bytes = new Uint8Array(bin.length)
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
-  return new TextDecoder().decode(bytes)
+  return bytes
+}
+
+/** Legacy decoder for pre-compression links (plain-JSON base64url). */
+function base64UrlToUtf8(b64url: string): string {
+  return new TextDecoder().decode(base64UrlToBytes(b64url))
+}
+
+// ── deflate / inflate via the browser's built-in CompressionStream ───────────
+
+async function deflate(str: string): Promise<Uint8Array> {
+  const stream = new Blob([str])
+    .stream()
+    .pipeThrough(new CompressionStream('deflate'))
+  return new Uint8Array(await new Response(stream).arrayBuffer())
+}
+
+async function inflate(bytes: Uint8Array): Promise<string> {
+  const stream = new Blob([bytes as BlobPart])
+    .stream()
+    .pipeThrough(new DecompressionStream('deflate'))
+  return new Response(stream).text()
+}
+
+function isSnapshot(raw: unknown): raw is Snapshot {
+  const s = raw as Snapshot
+  return (
+    !!s &&
+    typeof s === 'object' &&
+    s.v === 1 &&
+    typeof s.date === 'string' &&
+    !!s.progress &&
+    typeof s.progress === 'object'
+  )
 }
 
 /** Build a snapshot from a live progress map (solved problems only). */
@@ -55,31 +87,31 @@ export function buildSnapshot(
   return { v: 1, date: todayISO(), progress: trimmed }
 }
 
-/** Encode a snapshot into a shareable absolute URL. */
-export function snapshotUrl(snapshot: Snapshot): string {
-  const encoded = utf8ToBase64Url(JSON.stringify(snapshot))
+/** Encode a snapshot into a compressed, shareable absolute URL. */
+export async function snapshotUrl(snapshot: Snapshot): Promise<string> {
+  const bytes = await deflate(JSON.stringify(snapshot))
   const { origin, pathname } = window.location
-  return `${origin}${pathname}${HASH_PREFIX}${encoded}`
+  return `${origin}${pathname}${HASH_PREFIX}${bytesToBase64Url(bytes)}`
 }
 
 /**
- * Decode a snapshot from a location hash (e.g. "#s=…"). Returns null when the
- * hash isn't a snapshot or can't be parsed into the expected shape.
+ * Decode a snapshot from a location hash ("#s=…"). Tries the compressed format
+ * first, then the legacy plain-JSON format. Returns null on any failure.
  */
-export function decodeSnapshot(hash: string): Snapshot | null {
+export async function decodeSnapshot(hash: string): Promise<Snapshot | null> {
   if (!hash.startsWith(HASH_PREFIX)) return null
+  const payload = hash.slice(HASH_PREFIX.length)
+  // Current format: deflate-compressed JSON.
   try {
-    const raw = JSON.parse(base64UrlToUtf8(hash.slice(HASH_PREFIX.length)))
-    if (
-      raw &&
-      typeof raw === 'object' &&
-      raw.v === 1 &&
-      typeof raw.date === 'string' &&
-      raw.progress &&
-      typeof raw.progress === 'object'
-    ) {
-      return raw as Snapshot
-    }
+    const raw = JSON.parse(await inflate(base64UrlToBytes(payload)))
+    if (isSnapshot(raw)) return raw
+  } catch {
+    /* try legacy */
+  }
+  // Legacy format: plain-JSON base64url (pre-compression links).
+  try {
+    const raw = JSON.parse(base64UrlToUtf8(payload))
+    if (isSnapshot(raw)) return raw
   } catch {
     /* fall through */
   }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Check, Copy, Share2 } from 'lucide-react'
 import type { ProblemProgress } from '../data/types'
 import { buildSnapshot, snapshotUrl } from '../lib/share'
@@ -13,10 +13,22 @@ interface ShareDialogProps {
 /** Builds a read-only snapshot link + share card the user can copy or screenshot. */
 export function ShareDialog({ progress, onClose }: ShareDialogProps) {
   const snapshot = useMemo(() => buildSnapshot(progress), [progress])
-  const url = useMemo(() => snapshotUrl(snapshot), [snapshot])
+  const [url, setUrl] = useState('')
   const [copied, setCopied] = useState(false)
 
+  // Encoding is async (compression); build the link when the snapshot changes.
+  useEffect(() => {
+    let cancelled = false
+    snapshotUrl(snapshot).then((u) => {
+      if (!cancelled) setUrl(u)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [snapshot])
+
   const copy = async () => {
+    if (!url) return
     try {
       await navigator.clipboard.writeText(url)
       setCopied(true)
@@ -40,14 +52,15 @@ export function ShareDialog({ progress, onClose }: ShareDialogProps) {
       <div className="mt-1.5 flex items-center gap-2">
         <input
           readOnly
-          value={url}
+          value={url || 'Generating link…'}
           onFocus={(e) => e.currentTarget.select()}
           className="min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 py-2 text-xs text-ink"
         />
         <button
           type="button"
           onClick={copy}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-google-blue px-3 py-2 text-xs font-medium text-white hover:opacity-90"
+          disabled={!url}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-google-blue px-3 py-2 text-xs font-medium text-white hover:opacity-90 disabled:opacity-40"
         >
           {copied ? <Check size={14} /> : <Copy size={14} />}
           {copied ? 'Copied' : 'Copy'}

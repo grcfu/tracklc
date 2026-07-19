@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { HeatmapColor, ProblemProgress } from '../data/types'
 import { activityByDate } from '../lib/stats'
 import { addDays, formatDate, fromISODate, todayISO } from '../lib/dates'
@@ -16,8 +16,16 @@ interface HeatmapProps {
 }
 
 /** GitHub-style contribution grid of solve/review activity, last ~5 months. */
+interface Tip {
+  date: string
+  count: number
+  x: number
+  y: number
+}
+
 export function Heatmap({ progress, color, onColorChange }: HeatmapProps) {
   const counts = useMemo(() => activityByDate(progress), [progress])
+  const [tip, setTip] = useState<Tip | null>(null)
 
   const { weeks, monthLabels, totalDays } = useMemo(() => {
     const today = todayISO()
@@ -116,11 +124,20 @@ export function Heatmap({ progress, color, onColorChange }: HeatmapProps) {
                   return (
                     <div
                       key={day.date}
-                      title={
+                      onMouseEnter={
                         day.future
-                          ? ''
-                          : `${formatDate(day.date)} — ${day.count} action${day.count === 1 ? '' : 's'}`
+                          ? undefined
+                          : (e) => {
+                              const r = e.currentTarget.getBoundingClientRect()
+                              setTip({
+                                date: day.date,
+                                count: day.count,
+                                x: r.left + r.width / 2,
+                                y: r.top,
+                              })
+                            }
                       }
+                      onMouseLeave={() => setTip(null)}
                       className={cn(
                         'h-[11px] w-[11px] rounded-[2px]',
                         (day.future || level === 0) && 'bg-line/40',
@@ -157,6 +174,20 @@ export function Heatmap({ progress, color, onColorChange }: HeatmapProps) {
         ))}
         <span>More</span>
       </div>
+
+      {tip && (
+        <div
+          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full rounded-lg border border-line bg-elevated px-2.5 py-1.5 text-xs shadow-cardHover"
+          style={{ left: tip.x, top: tip.y - 6 }}
+        >
+          <div className="font-semibold text-ink">{formatDate(tip.date)}</div>
+          <div className="text-muted">
+            {tip.count === 0
+              ? 'No activity'
+              : `${tip.count} problem${tip.count === 1 ? '' : 's'}`}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

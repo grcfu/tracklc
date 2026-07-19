@@ -163,16 +163,6 @@ export function useProgress() {
     [patchProblem],
   )
 
-  const setAttempts = useCallback(
-    (id: string, value: number) => {
-      const n = Math.max(0, Math.floor(value))
-      patchProblem(id, (prev) =>
-        n === 0 ? omitKeys(prev, ['attempts']) : { ...prev, attempts: n },
-      )
-    },
-    [patchProblem],
-  )
-
   const toggleFlag = useCallback(
     (id: string) => {
       patchProblem(id, (prev) =>
@@ -233,7 +223,6 @@ export function useProgress() {
     markReviewedToday,
     removeAttempt,
     setNotes,
-    setAttempts,
     toggleFlag,
     setDateSolved,
     // settings

@@ -122,18 +122,38 @@ export default function App() {
   )
 
   // ── Snapshot sharing: open the tracker as a read-only view from a link ─────
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(() =>
-    decodeSnapshot(window.location.hash),
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null)
+  const [snapshotLoading, setSnapshotLoading] = useState(() =>
+    window.location.hash.startsWith('#s='),
   )
   const [showShare, setShowShare] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
   const [showLog, setShowLog] = useState(false)
   const [backupDismissed, setBackupDismissed] = useState(false)
 
+  // Decoding a shared snapshot is async (decompression); load on mount + hashchange.
   useEffect(() => {
-    const onHashChange = () => setSnapshot(decodeSnapshot(window.location.hash))
-    window.addEventListener('hashchange', onHashChange)
-    return () => window.removeEventListener('hashchange', onHashChange)
+    let cancelled = false
+    const load = () => {
+      const hash = window.location.hash
+      if (!hash.startsWith('#s=')) {
+        setSnapshot(null)
+        setSnapshotLoading(false)
+        return
+      }
+      setSnapshotLoading(true)
+      decodeSnapshot(hash).then((s) => {
+        if (cancelled) return
+        setSnapshot(s)
+        setSnapshotLoading(false)
+      })
+    }
+    load()
+    window.addEventListener('hashchange', load)
+    return () => {
+      cancelled = true
+      window.removeEventListener('hashchange', load)
+    }
   }, [])
 
   const exitSnapshot = useCallback(() => {
@@ -196,7 +216,6 @@ export default function App() {
       onSetConfidence: api.setConfidence,
       onClearRating: api.clearRating,
       onSetNotes: api.setNotes,
-      onSetAttempts: api.setAttempts,
       onToggleFlag: api.toggleFlag,
       onSetDateSolved: api.setDateSolved,
       onRemoveAttempt: doRemoveAttempt,
@@ -206,7 +225,6 @@ export default function App() {
       api.setConfidence,
       api.clearRating,
       api.setNotes,
-      api.setAttempts,
       api.toggleFlag,
       api.setDateSolved,
       doRemoveAttempt,
@@ -295,6 +313,13 @@ export default function App() {
     daysSinceBackup >= 7
 
   // A snapshot link takes over the whole screen as a read-only view.
+  if (snapshotLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-canvas text-sm text-muted">
+        Loading shared snapshot…
+      </div>
+    )
+  }
   if (snapshot) {
     return (
       <SnapshotView
@@ -409,8 +434,15 @@ export default function App() {
           </aside>
 
           <main>
-            <div className="mb-6">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <TabBar active={tab} onChange={setTab} />
+              <button
+                type="button"
+                onClick={expanded.size ? collapseAll : expandAllSolved}
+                className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:text-ink"
+              >
+                {expanded.size ? 'Collapse all' : 'Expand all solved'}
+              </button>
             </div>
 
             {tab === 'company' && (
@@ -427,16 +459,6 @@ export default function App() {
               onChange={updateFilters}
               onReset={resetFilters}
             />
-
-            <div className="mb-3 flex justify-end">
-              <button
-                type="button"
-                onClick={expanded.size ? collapseAll : expandAllSolved}
-                className="rounded-full border border-line px-3 py-1 text-xs font-medium text-muted transition-colors hover:text-ink"
-              >
-                {expanded.size ? 'Collapse all' : 'Expand all solved'}
-              </button>
-            </div>
 
             {groups.length > 0 ? (
               <div>

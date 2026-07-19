@@ -3,12 +3,12 @@ import type { Store } from '../data/types'
 export const STORAGE_KEY = 'lc-tracker-v1'
 export const SCHEMA_VERSION = 1 as const
 
-/** A fresh, empty store. First-time visitors start in light mode. */
+/** A fresh, empty store. First-time visitors start in dark mode. */
 export function defaultStore(): Store {
   return {
     version: SCHEMA_VERSION,
     progress: {},
-    settings: { theme: 'light', dailyGoal: 3, heatmapColor: 'green' },
+    settings: { theme: 'dark', dailyGoal: 3, heatmapColor: 'green' },
   }
 }
 
