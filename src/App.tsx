@@ -23,6 +23,10 @@ import {
 } from './lib/filters'
 import { useProgress } from './hooks/useProgress'
 import { useShortcuts } from './hooks/useShortcuts'
+import { useAuth } from './hooks/useAuth'
+import { useCloudSync } from './hooks/useCloudSync'
+import { AuthButton } from './components/AuthButton'
+import { isCloudEnabled } from './lib/supabase'
 import { Header } from './components/Header'
 import { ThemeToggle } from './components/ThemeToggle'
 import { SettingsMenu } from './components/SettingsMenu'
@@ -49,6 +53,10 @@ export default function App() {
   useEffect(() => {
     applyTheme(settings.theme)
   }, [settings.theme])
+
+  // Accounts + cloud sync (no-ops when Supabase isn't configured).
+  const auth = useAuth()
+  useCloudSync(api, auth.user?.id ?? null)
 
   const toggleTheme = useCallback(() => {
     api.setTheme(settings.theme === 'dark' ? 'light' : 'dark')
@@ -339,6 +347,7 @@ export default function App() {
           total={problems.length}
           right={
             <>
+              {isCloudEnabled && <AuthButton auth={auth} />}
               <button
                 type="button"
                 onClick={() => setShowLog(true)}
