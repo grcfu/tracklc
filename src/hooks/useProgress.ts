@@ -180,6 +180,24 @@ export function useProgress() {
     [patchProblem],
   )
 
+  /** Change one attempt's rating (0 = clear to unrated); re-derives confidence. */
+  const editAttemptRating = useCallback(
+    (id: string, index: number, value: Confidence | 0) => {
+      patchProblem(id, (prev) => {
+        const hist = (prev.confidenceHistory ?? []).slice()
+        if (index < 0 || index >= hist.length) return prev
+        hist[index] = { ...hist[index], value: value as Confidence }
+        const lastRated = [...hist].reverse().find((h) => h.value)?.value
+        return {
+          ...prev,
+          confidence: lastRated ?? prev.confidence,
+          confidenceHistory: hist,
+        }
+      })
+    },
+    [patchProblem],
+  )
+
   const setNotes = useCallback(
     (id: string, notes: string) => {
       patchProblem(id, (prev) =>
@@ -249,6 +267,7 @@ export function useProgress() {
     markReviewedToday,
     removeAttempt,
     editAttemptDate,
+    editAttemptRating,
     setNotes,
     toggleFlag,
     setDateSolved,

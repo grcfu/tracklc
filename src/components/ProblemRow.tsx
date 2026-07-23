@@ -26,6 +26,7 @@ export interface RowHandlers {
   onSetDateSolved: (id: string, date: string) => void
   onRemoveAttempt: (id: string, index: number) => void
   onEditAttemptDate: (id: string, index: number, date: string) => void
+  onEditAttemptRating: (id: string, index: number, value: Confidence | 0) => void
 }
 
 export interface ProblemRowProps extends RowHandlers {
@@ -48,6 +49,7 @@ function ProblemRowImpl({
   onSetDateSolved,
   onRemoveAttempt,
   onEditAttemptDate,
+  onEditAttemptRating,
 }: ProblemRowProps) {
   const { id } = problem
   const confidence = progress?.confidence ?? 0
@@ -175,6 +177,7 @@ function ProblemRowImpl({
           onSetDateSolved={onSetDateSolved}
           onRemoveAttempt={onRemoveAttempt}
           onEditAttemptDate={onEditAttemptDate}
+          onEditAttemptRating={onEditAttemptRating}
         />
       )}
     </li>
@@ -193,6 +196,7 @@ interface LogPanelProps {
   onSetDateSolved: (id: string, date: string) => void
   onRemoveAttempt: (id: string, index: number) => void
   onEditAttemptDate: (id: string, index: number, date: string) => void
+  onEditAttemptRating: (id: string, index: number, value: Confidence | 0) => void
 }
 
 function LogPanel({
@@ -204,12 +208,14 @@ function LogPanel({
   onSetDateSolved,
   onRemoveAttempt,
   onEditAttemptDate,
+  onEditAttemptRating,
 }: LogPanelProps) {
   const { id } = problem
   const confidence = progress?.confidence ?? 0
   const solved = confidence > 0
   const history = progress?.confidenceHistory ?? []
   const [editingDate, setEditingDate] = useState<number | null>(null)
+  const [editingRating, setEditingRating] = useState<number | null>(null)
 
   return (
     <div className="animate-fade-in border-t border-line bg-surface px-3 py-3 sm:px-4">
@@ -291,17 +297,45 @@ function LogPanel({
                     key={i}
                     className="inline-flex items-center gap-1 rounded-full bg-line/50 py-0.5 pl-2 pr-1 text-xs text-muted"
                   >
-                    {pt.value ? (
-                      <span
-                        className="font-semibold"
-                        style={{ color: CONFIDENCE_COLOR[pt.value] }}
-                      >
-                        {pt.value}★
+                    {editingRating === i ? (
+                      <span className="inline-flex items-center gap-1">
+                        <StarRating
+                          value={pt.value}
+                          size={13}
+                          onChange={(v) => {
+                            onEditAttemptRating(id, i, v)
+                            setEditingRating(null)
+                          }}
+                          label="Edit attempt rating"
+                        />
+                        {pt.value ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onEditAttemptRating(id, i, 0)
+                              setEditingRating(null)
+                            }}
+                            title="Clear rating"
+                            className="px-0.5 text-muted/60 hover:text-ink"
+                          >
+                            —
+                          </button>
+                        ) : null}
                       </span>
                     ) : (
-                      <span className="text-muted/50" title="Rating not recorded">
-                        ☆
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setEditingRating(i)}
+                        title="Edit rating"
+                        className="font-semibold"
+                        style={pt.value ? { color: CONFIDENCE_COLOR[pt.value] } : undefined}
+                      >
+                        {pt.value ? (
+                          `${pt.value}★`
+                        ) : (
+                          <span className="text-muted/50">☆</span>
+                        )}
+                      </button>
                     )}
                     {editingDate === i ? (
                       <input

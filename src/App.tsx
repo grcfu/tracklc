@@ -228,6 +228,7 @@ export default function App() {
       onSetDateSolved: api.setDateSolved,
       onRemoveAttempt: doRemoveAttempt,
       onEditAttemptDate: api.editAttemptDate,
+      onEditAttemptRating: api.editAttemptRating,
     }),
     [
       toggleExpand,
@@ -238,6 +239,7 @@ export default function App() {
       api.setDateSolved,
       doRemoveAttempt,
       api.editAttemptDate,
+      api.editAttemptRating,
     ],
   )
 
