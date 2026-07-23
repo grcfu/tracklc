@@ -142,9 +142,12 @@ export function useProgress() {
           ])
         }
         const dates = hist.map((h) => h.date).sort()
+        // Current rating = the most recent *rated* attempt (some imported
+        // attempts are unrated), falling back to the previous confidence.
+        const lastRated = [...hist].reverse().find((h) => h.value)?.value
         return {
           ...prev,
-          confidence: hist[hist.length - 1].value,
+          confidence: lastRated ?? prev.confidence,
           dateSolved: dates[0],
           lastReviewed: dates[dates.length - 1],
           confidenceHistory: hist,

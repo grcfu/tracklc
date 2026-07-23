@@ -285,12 +285,18 @@ function LogPanel({
                     key={i}
                     className="inline-flex items-center gap-1 rounded-full bg-line/50 py-0.5 pl-2 pr-1 text-xs text-muted"
                   >
-                    <span
-                      className="font-semibold"
-                      style={{ color: CONFIDENCE_COLOR[pt.value] }}
-                    >
-                      {pt.value}★
-                    </span>
+                    {pt.value ? (
+                      <span
+                        className="font-semibold"
+                        style={{ color: CONFIDENCE_COLOR[pt.value] }}
+                      >
+                        {pt.value}★
+                      </span>
+                    ) : (
+                      <span className="text-muted/50" title="Rating not recorded">
+                        ☆
+                      </span>
+                    )}
                     <span>{formatDate(pt.date)}</span>
                     <button
                       type="button"
