@@ -157,6 +157,29 @@ export function useProgress() {
     [patchProblem],
   )
 
+  /** Change the date of one logged attempt, re-sorting + re-deriving dates. */
+  const editAttemptDate = useCallback(
+    (id: string, index: number, newDate: string) => {
+      if (!newDate) return
+      patchProblem(id, (prev) => {
+        const hist = (prev.confidenceHistory ?? []).slice()
+        if (index < 0 || index >= hist.length) return prev
+        hist[index] = { ...hist[index], date: newDate }
+        hist.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+        const dates = hist.map((h) => h.date)
+        const lastRated = [...hist].reverse().find((h) => h.value)?.value
+        return {
+          ...prev,
+          confidence: lastRated ?? prev.confidence,
+          dateSolved: dates[0],
+          lastReviewed: dates[dates.length - 1],
+          confidenceHistory: hist,
+        }
+      })
+    },
+    [patchProblem],
+  )
+
   const setNotes = useCallback(
     (id: string, notes: string) => {
       patchProblem(id, (prev) =>
@@ -225,6 +248,7 @@ export function useProgress() {
     clearRating,
     markReviewedToday,
     removeAttempt,
+    editAttemptDate,
     setNotes,
     toggleFlag,
     setDateSolved,

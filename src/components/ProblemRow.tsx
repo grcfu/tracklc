@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { ChevronDown, ExternalLink, Flag, RotateCcw, X } from 'lucide-react'
 import type { Confidence, Frequency, Problem, ProblemProgress } from '../data/types'
 import { cn, CONFIDENCE_COLOR, DIFFICULTY_BADGE } from '../lib/ui'
@@ -25,6 +25,7 @@ export interface RowHandlers {
   onToggleFlag: (id: string) => void
   onSetDateSolved: (id: string, date: string) => void
   onRemoveAttempt: (id: string, index: number) => void
+  onEditAttemptDate: (id: string, index: number, date: string) => void
 }
 
 export interface ProblemRowProps extends RowHandlers {
@@ -46,6 +47,7 @@ function ProblemRowImpl({
   onToggleFlag,
   onSetDateSolved,
   onRemoveAttempt,
+  onEditAttemptDate,
 }: ProblemRowProps) {
   const { id } = problem
   const confidence = progress?.confidence ?? 0
@@ -172,6 +174,7 @@ function ProblemRowImpl({
           onToggleFlag={onToggleFlag}
           onSetDateSolved={onSetDateSolved}
           onRemoveAttempt={onRemoveAttempt}
+          onEditAttemptDate={onEditAttemptDate}
         />
       )}
     </li>
@@ -189,6 +192,7 @@ interface LogPanelProps {
   onToggleFlag: (id: string) => void
   onSetDateSolved: (id: string, date: string) => void
   onRemoveAttempt: (id: string, index: number) => void
+  onEditAttemptDate: (id: string, index: number, date: string) => void
 }
 
 function LogPanel({
@@ -199,11 +203,13 @@ function LogPanel({
   onSetNotes,
   onSetDateSolved,
   onRemoveAttempt,
+  onEditAttemptDate,
 }: LogPanelProps) {
   const { id } = problem
   const confidence = progress?.confidence ?? 0
   const solved = confidence > 0
   const history = progress?.confidenceHistory ?? []
+  const [editingDate, setEditingDate] = useState<number | null>(null)
 
   return (
     <div className="animate-fade-in border-t border-line bg-surface px-3 py-3 sm:px-4">
@@ -297,7 +303,29 @@ function LogPanel({
                         ☆
                       </span>
                     )}
-                    <span>{formatDate(pt.date)}</span>
+                    {editingDate === i ? (
+                      <input
+                        type="date"
+                        autoFocus
+                        max={todayISO()}
+                        defaultValue={pt.date}
+                        onChange={(e) => {
+                          if (e.target.value) onEditAttemptDate(id, i, e.target.value)
+                          setEditingDate(null)
+                        }}
+                        onBlur={() => setEditingDate(null)}
+                        className="rounded border border-line bg-elevated px-1 py-0 text-xs text-ink"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setEditingDate(i)}
+                        title="Edit date"
+                        className="hover:text-ink hover:underline"
+                      >
+                        {formatDate(pt.date)}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => onRemoveAttempt(id, i)}
