@@ -399,8 +399,8 @@ export default function App() {
             <AlertTriangle size={16} className="shrink-0 text-amber-600 dark:text-google-yellow" />
             <span className="text-ink">
               {settings.lastBackup
-                ? `It's been ${daysSinceBackup} days since your last backup.`
-                : `Your progress lives only in this browser — back it up so you don't lose it.`}
+                ? `It's been ${daysSinceBackup} day${daysSinceBackup === 1 ? '' : 's'} since your last backup.`
+                : `You haven't exported a backup yet.`}
             </span>
             <div className="ml-auto flex items-center gap-2">
               <button
