@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Confidence,
+  ConfidencePoint,
   HeatmapColor,
   ProblemProgress,
   Store,
@@ -17,6 +18,30 @@ function omitKeys<T extends object, K extends keyof T>(
   const copy = { ...obj }
   for (const k of keys) delete copy[k]
   return copy
+}
+
+/**
+ * Re-derive everything that is a function of the attempt log. `confidenceHistory`
+ * is the source of truth: it stays date-sorted, its ends give the solve dates,
+ * and the rating is the most recent *rated* attempt (some imported attempts are
+ * unrated), falling back to the previous confidence. Callers must pass a
+ * non-empty history — an emptied log un-solves the problem instead.
+ */
+function deriveFromHistory(
+  prev: ProblemProgress,
+  hist: ConfidencePoint[],
+): ProblemProgress {
+  const sorted = [...hist].sort((a, b) =>
+    a.date < b.date ? -1 : a.date > b.date ? 1 : 0,
+  )
+  const lastRated = [...sorted].reverse().find((h) => h.value)?.value
+  return {
+    ...prev,
+    confidence: lastRated ?? prev.confidence,
+    dateSolved: sorted[0].date,
+    lastReviewed: sorted[sorted.length - 1].date,
+    confidenceHistory: sorted,
+  }
 }
 
 /**
@@ -141,17 +166,7 @@ export function useProgress() {
             'confidenceHistory',
           ])
         }
-        const dates = hist.map((h) => h.date).sort()
-        // Current rating = the most recent *rated* attempt (some imported
-        // attempts are unrated), falling back to the previous confidence.
-        const lastRated = [...hist].reverse().find((h) => h.value)?.value
-        return {
-          ...prev,
-          confidence: lastRated ?? prev.confidence,
-          dateSolved: dates[0],
-          lastReviewed: dates[dates.length - 1],
-          confidenceHistory: hist,
-        }
+        return deriveFromHistory(prev, hist)
       })
     },
     [patchProblem],
@@ -165,16 +180,7 @@ export function useProgress() {
         const hist = (prev.confidenceHistory ?? []).slice()
         if (index < 0 || index >= hist.length) return prev
         hist[index] = { ...hist[index], date: newDate }
-        hist.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
-        const dates = hist.map((h) => h.date)
-        const lastRated = [...hist].reverse().find((h) => h.value)?.value
-        return {
-          ...prev,
-          confidence: lastRated ?? prev.confidence,
-          dateSolved: dates[0],
-          lastReviewed: dates[dates.length - 1],
-          confidenceHistory: hist,
-        }
+        return deriveFromHistory(prev, hist)
       })
     },
     [patchProblem],
@@ -216,9 +222,21 @@ export function useProgress() {
     [patchProblem],
   )
 
+  /**
+   * Edit the "first solved" date. The first solve *is* the earliest logged
+   * attempt, so retarget that entry rather than writing `dateSolved` on its own
+   * — otherwise the next attempt edit would re-derive the date and silently
+   * throw this away. Moving it past a later attempt makes that one the first.
+   */
   const setDateSolved = useCallback(
     (id: string, date: string) => {
-      patchProblem(id, (prev) => ({ ...prev, dateSolved: date }))
+      if (!date) return
+      patchProblem(id, (prev) => {
+        const hist = (prev.confidenceHistory ?? []).slice()
+        if (hist.length === 0) return { ...prev, dateSolved: date }
+        hist[0] = { ...hist[0], date }
+        return deriveFromHistory(prev, hist)
+      })
     },
     [patchProblem],
   )

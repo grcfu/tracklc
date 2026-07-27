@@ -2,7 +2,7 @@ import { memo, useState } from 'react'
 import { ChevronDown, ExternalLink, Flag, RotateCcw, X } from 'lucide-react'
 import type { Confidence, Frequency, Problem, ProblemProgress } from '../data/types'
 import { cn, CONFIDENCE_COLOR, DIFFICULTY_BADGE } from '../lib/ui'
-import { formatDate, relativeDays, todayISO } from '../lib/dates'
+import { formatDate, maxDate, relativeDays, todayISO } from '../lib/dates'
 import { StarRating } from './StarRating'
 
 const FREQUENCY_LABEL: Record<Frequency, string> = {
@@ -57,6 +57,9 @@ function ProblemRowImpl({
   const flagged = !!progress?.flagged
   const attempts = progress?.confidenceHistory?.length ?? 0
   const needsReview = solved && confidence <= 3
+  // The subtitle shows the *most recent* attempt, not the first solve. Take the
+  // later of the two so a manually-edited "First solved" can't read as stale.
+  const lastSolved = maxDate(progress?.lastReviewed, progress?.dateSolved)
 
   const toggle = () => onToggleExpand(id)
   const onRowKey = (e: React.KeyboardEvent) => {
@@ -106,7 +109,8 @@ function ProblemRowImpl({
           </div>
           {solved && (
             <p className="mt-px truncate text-xs leading-tight text-muted">
-              Solved {progress?.dateSolved ? relativeDays(progress.dateSolved) : ''}
+              {attempts > 1 ? 'Last solved' : 'Solved'}{' '}
+              {lastSolved ? relativeDays(lastSolved) : ''}
               {attempts > 0 && ` · ${attempts} attempt${attempts > 1 ? 's' : ''}`}
             </p>
           )}

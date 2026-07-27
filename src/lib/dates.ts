@@ -57,6 +57,16 @@ export function formatDayHeading(dateISO: string): string {
   })
 }
 
+/** The later of two optional YYYY-MM-DD dates (they sort lexically). */
+export function maxDate(
+  a: string | undefined,
+  b: string | undefined,
+): string | undefined {
+  if (!a) return b
+  if (!b) return a
+  return a >= b ? a : b
+}
+
 /** Relative phrasing like "today", "yesterday", "3 days ago". */
 export function relativeDays(dateISO: string): string {
   const n = daysSince(dateISO)
