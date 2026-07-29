@@ -22,13 +22,25 @@ export function totalSolved(progress: ProgressMap): number {
   return Object.values(progress).filter(isSolved).length
 }
 
+/**
+ * Every date one problem saw activity. The attempt log is the source of truth;
+ * `dateSolved`/`lastReviewed` are folded in for entries predating the log (old
+ * imports). A Set, so several attempts on one date count as one day's work —
+ * this is the same collapsing the activity log does, so the views agree.
+ */
+export function problemActiveDates(p: ProblemProgress): Set<string> {
+  const dates = new Set<string>()
+  for (const h of p.confidenceHistory ?? []) dates.add(h.date)
+  if (p.dateSolved) dates.add(p.dateSolved)
+  if (p.lastReviewed) dates.add(p.lastReviewed)
+  return dates
+}
+
 /** Every date on which there was activity (a solve or a review). */
 export function activeDates(progress: ProgressMap): Set<string> {
   const dates = new Set<string>()
   for (const p of Object.values(progress)) {
-    if (p.dateSolved) dates.add(p.dateSolved)
-    if (p.lastReviewed) dates.add(p.lastReviewed)
-    for (const h of p.confidenceHistory ?? []) dates.add(h.date)
+    for (const d of problemActiveDates(p)) dates.add(d)
   }
   return dates
 }
@@ -96,16 +108,17 @@ export function weakestCategory(
   return worst
 }
 
-/** Per-day activity counts (solve + review events) for the heatmap. */
+/**
+ * Problems touched per day, for the heatmap. Built from the same dates as
+ * `currentStreak`, so the grid can't show a blank square on a day the streak
+ * counts.
+ */
 export function activityByDate(progress: ProgressMap): Map<string, number> {
   const counts = new Map<string, number>()
-  const bump = (d?: string) => {
-    if (!d) return
-    counts.set(d, (counts.get(d) ?? 0) + 1)
-  }
   for (const p of Object.values(progress)) {
-    bump(p.dateSolved)
-    if (p.lastReviewed && p.lastReviewed !== p.dateSolved) bump(p.lastReviewed)
+    for (const d of problemActiveDates(p)) {
+      counts.set(d, (counts.get(d) ?? 0) + 1)
+    }
   }
   return counts
 }

@@ -27,7 +27,7 @@ export function Heatmap({ progress, color, onColorChange }: HeatmapProps) {
   const counts = useMemo(() => activityByDate(progress), [progress])
   const [tip, setTip] = useState<Tip | null>(null)
 
-  const { weeks, monthLabels, totalDays } = useMemo(() => {
+  const { weeks, monthLabels, totalActions } = useMemo(() => {
     const today = todayISO()
     const weekday = fromISODate(today).getDay() // 0=Sun
     // Fill the current week out to Saturday, then step back WEEKS*7 - 1 days.
@@ -62,8 +62,13 @@ export function Heatmap({ progress, color, onColorChange }: HeatmapProps) {
       weeksArr.push(col)
     }
 
-    const total = [...counts.values()].reduce((a, b) => a + b, 0)
-    return { weeks: weeksArr, monthLabels: labels, totalDays: total }
+    // Only what the grid actually shows — the label says "last 5 months", and
+    // imported history can reach back years before `start`.
+    let total = 0
+    for (const [date, n] of counts) {
+      if (date >= start && date <= today) total += n
+    }
+    return { weeks: weeksArr, monthLabels: labels, totalActions: total }
   }, [counts])
 
   return (
@@ -96,7 +101,7 @@ export function Heatmap({ progress, color, onColorChange }: HeatmapProps) {
           </div>
         </div>
         <span className="text-xs text-muted">
-          {totalDays} action{totalDays === 1 ? '' : 's'} · last 5 months
+          {totalActions} action{totalActions === 1 ? '' : 's'} · last 5 months
         </span>
       </div>
 
