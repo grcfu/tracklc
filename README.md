@@ -9,16 +9,13 @@ sync your progress to the cloud so it follows you across devices.
 
 ## Screenshots
 
-> Add your own screenshots to `docs/screenshots/` with these names and they'll show up
-> here (see [docs/screenshots/README.md](docs/screenshots/README.md) for how).
-
 | Dashboard | Problem detail |
 |-----------|----------------|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Problem detail](docs/screenshots/problem-detail.png) |
+| ![Dashboard](https://github.com/user-attachments/assets/e2f1423e-b222-4838-acd2-10051b1c339d) | ![Problem detail](https://github.com/user-attachments/assets/7432d53c-7225-4404-91b2-170ee7918a8e) |
 
 | Activity log | Share snapshot |
 |--------------|----------------|
-| ![Activity log](docs/screenshots/activity-log.png) | ![Share](docs/screenshots/share.png) |
+| ![Activity log](https://github.com/user-attachments/assets/a5e29079-4040-4582-9bd6-7450dbfd5786) | ![Share](https://github.com/user-attachments/assets/c2f31ad0-59bf-4e1e-bf1b-3aa918210220) |
 
 ## Features
 
