@@ -1,4 +1,4 @@
-import { memo, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { ChevronDown, ExternalLink, Flag, RotateCcw, X } from 'lucide-react'
 import type { Confidence, Frequency, Problem, ProblemProgress } from '../data/types'
 import { cn, CONFIDENCE_COLOR, DIFFICULTY_BADGE } from '../lib/ui'
@@ -188,6 +188,71 @@ function ProblemRowImpl({
   )
 }
 
+// ── Date field ──────────────────────────────────────────────────────────────
+
+interface DateFieldProps {
+  /** The saved date, as YYYY-MM-DD. */
+  value: string
+  /** Latest date the user may pick, as YYYY-MM-DD. */
+  max?: string
+  id?: string
+  disabled?: boolean
+  autoFocus?: boolean
+  className?: string
+  /** Called with the new YYYY-MM-DD once the edit is committed. */
+  onCommit: (date: string) => void
+  /** Called when the edit ends without a change (Escape, or an unchanged blur). */
+  onCancel?: () => void
+}
+
+/**
+ * A date input that holds its own draft while you type and only reports upward
+ * on Enter or blur.
+ *
+ * Native date inputs fire `change` the moment their segments happen to form a
+ * valid date, so saving on every change clobbers a half-typed day — typing "26"
+ * commits "the 2nd" after the first digit, which then re-renders the field out
+ * from under you. Buffering until commit lets you finish typing.
+ */
+function DateField({ value, max, onCommit, onCancel, ...input }: DateFieldProps) {
+  const [draft, setDraft] = useState(value)
+
+  // Re-sync if the saved date changes elsewhere (a new attempt, an undo, a sync).
+  useEffect(() => setDraft(value), [value])
+
+  const revert = () => {
+    setDraft(value)
+    onCancel?.()
+  }
+
+  // Cleared, unchanged, or past `max` (which the picker forbids but typing can
+  // still reach) all mean "nothing to save".
+  const commit = () => {
+    if (!draft || draft === value || (max && draft > max)) revert()
+    else onCommit(draft)
+  }
+
+  return (
+    <input
+      {...input}
+      type="date"
+      max={max}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          commit()
+        } else if (e.key === 'Escape') {
+          e.preventDefault()
+          revert()
+        }
+      }}
+      onBlur={commit}
+    />
+  )
+}
+
 // ── Inline log panel ────────────────────────────────────────────────────────
 
 interface LogPanelProps {
@@ -258,13 +323,12 @@ function LogPanel({
             >
               First solved
             </label>
-            <input
+            <DateField
               id={`date-${id}`}
-              type="date"
               max={todayISO()}
               disabled={!solved}
               value={progress?.dateSolved ?? todayISO()}
-              onChange={(e) => onSetDateSolved(id, e.target.value)}
+              onCommit={(date) => onSetDateSolved(id, date)}
               className="rounded-lg border border-line bg-elevated px-3 py-1.5 text-sm text-ink disabled:opacity-50"
             />
           </div>
@@ -342,16 +406,15 @@ function LogPanel({
                       </button>
                     )}
                     {editingDate === i ? (
-                      <input
-                        type="date"
+                      <DateField
                         autoFocus
                         max={todayISO()}
-                        defaultValue={pt.date}
-                        onChange={(e) => {
-                          if (e.target.value) onEditAttemptDate(id, i, e.target.value)
+                        value={pt.date}
+                        onCommit={(date) => {
+                          onEditAttemptDate(id, i, date)
                           setEditingDate(null)
                         }}
-                        onBlur={() => setEditingDate(null)}
+                        onCancel={() => setEditingDate(null)}
                         className="rounded border border-line bg-elevated px-1 py-0 text-xs text-ink"
                       />
                     ) : (
