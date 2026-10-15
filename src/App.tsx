@@ -47,6 +47,9 @@ import { CompanyBar, type CompanyGrouping } from './components/CompanyBar'
 import { FilterBar } from './components/FilterBar'
 import type { RowHandlers } from './components/ProblemRow'
 
+/** Rows rendered per page in a long list; more load as you scroll. */
+const ROW_PAGE = 100
+
 export default function App() {
   const api = useProgress()
   const { progress, settings } = api
@@ -198,6 +201,10 @@ export default function App() {
     () => new Set(LEETCODE_ALL_SECTIONS),
   )
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  // Long lists (LeetCode All sorted or filtered) render in pages as you scroll.
+  const [rowLimit, setRowLimit] = useState(ROW_PAGE)
+  useEffect(() => setRowLimit(ROW_PAGE), [tab, company, filters])
+  const showMoreRows = useCallback(() => setRowLimit((n) => n + ROW_PAGE), [])
 
   const updateFilters = useCallback(
     (patch: Partial<FilterState>) => setFilters((f) => ({ ...f, ...patch })),
@@ -507,6 +514,8 @@ export default function App() {
                     onToggleCollapse={toggleCollapse}
                     expandedRows={expanded}
                     handlers={handlers}
+                    limit={rowLimit}
+                    onShowMore={showMoreRows}
                   />
                 ))}
               </div>
