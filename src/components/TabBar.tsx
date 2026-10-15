@@ -9,6 +9,7 @@ interface Tab {
 const TABS: Tab[] = [
   { id: 'blind75', label: 'Blind 75' },
   { id: 'neetcode150', label: 'NeetCode 150' },
+  { id: 'neetcodeAll', label: 'NeetCode All' },
   { id: 'company', label: 'Company Specific' },
 ]
 
@@ -17,7 +18,7 @@ interface TabBarProps {
   onChange: (id: ListId) => void
 }
 
-/** Pill-style tab bar for switching between the three lists. */
+/** Pill-style tab bar for switching between the lists. */
 export function TabBar({ active, onChange }: TabBarProps) {
   return (
     <div
