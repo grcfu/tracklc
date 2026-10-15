@@ -15,7 +15,7 @@ export interface Problem {
 }
 
 /** The top-level tabs. */
-export type ListId = 'blind75' | 'neetcode150' | 'neetcodeAll' | 'company'
+export type ListId = 'blind75' | 'neetcode150' | 'neetcodeAll' | 'leetcodeAll' | 'company'
 
 export type CompanyId =
   | 'google'

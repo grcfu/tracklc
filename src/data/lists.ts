@@ -1,6 +1,7 @@
 import { BLIND75 } from './blind75'
 import { NEETCODE150 } from './neetcode150'
 import { NEETCODE_ALL } from './neetcodeAll'
+import { LEETCODE_ALL } from './leetcodeAll'
 import { COMPANIES } from './companies'
 import { getProblem } from './catalog'
 import type { CompanyId, Frequency, ListId, Problem } from './types'
@@ -24,6 +25,7 @@ export function listProblems(list: ListId, company: CompanyId): Problem[] {
   if (list === 'blind75') return BLIND75
   if (list === 'neetcode150') return NEETCODE150
   if (list === 'neetcodeAll') return NEETCODE_ALL
+  if (list === 'leetcodeAll') return LEETCODE_ALL
   return companyProblems(company).map((cp) => cp.problem)
 }
 
@@ -31,6 +33,7 @@ export const LIST_LABELS: Record<Exclude<ListId, 'company'>, string> = {
   blind75: 'Blind 75',
   neetcode150: 'NeetCode 150',
   neetcodeAll: 'NeetCode All',
+  leetcodeAll: 'LeetCode All',
 }
 
 export interface Group<T> {
