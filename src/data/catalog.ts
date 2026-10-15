@@ -2,6 +2,7 @@ import type { Problem } from './types'
 import { BLIND75 } from './blind75'
 import { NEETCODE150 } from './neetcode150'
 import { NEETCODE_ALL } from './neetcodeAll'
+import { LEETCODE_ALL } from './leetcodeAll'
 import { COMPANY_EXTRAS } from './companies'
 
 /**
@@ -28,9 +29,15 @@ function buildCatalog(sources: Problem[][]): Record<string, Problem> {
 
 export const PROBLEM_CATALOG: Record<string, Problem> = buildCatalog(SOURCES)
 
+/**
+ * LeetCode All is kept out of the catalog so suggestions and totals stay on the
+ * curated lists; it's only a fallback for looking up problems solved from it.
+ */
+const LEETCODE_ALL_BY_ID: Record<string, Problem> = buildCatalog([LEETCODE_ALL])
+
 /** Look up canonical problem metadata by id (undefined if unknown). */
 export const getProblem = (id: string): Problem | undefined =>
-  PROBLEM_CATALOG[id]
+  PROBLEM_CATALOG[id] ?? LEETCODE_ALL_BY_ID[id]
 
 /** Total number of distinct problems known across all lists. */
 export const TOTAL_PROBLEMS = Object.keys(PROBLEM_CATALOG).length
