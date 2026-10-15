@@ -90,3 +90,6 @@ export function groupByNumberRange(problems: Problem[]): Group<Problem>[] {
   }
   return groups
 }
+
+/** Every LeetCode All section key, used to start them all collapsed. */
+export const LEETCODE_ALL_SECTIONS: string[] = groupByNumberRange(LEETCODE_ALL).map((g) => g.key)
