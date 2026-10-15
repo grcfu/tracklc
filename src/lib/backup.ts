@@ -1,5 +1,6 @@
 import type { ProblemProgress, Store } from '../data/types'
-import { NEETCODE150 } from '../data/neetcode150'
+import { NEETCODE_ALL } from '../data/neetcodeAll'
+import { PROBLEM_CATALOG } from '../data/catalog'
 import { todayISO } from './dates'
 
 /** ISO date (YYYY-MM-DD) → "M/D" to match the Google Sheet's date style. */
@@ -11,11 +12,16 @@ function toSheetDate(iso: string): string {
 /**
  * Tab-separated rows mirroring the Google Sheet layout
  * (Name, Category, Difficulty, Dates, Rating, Notes) for every solved problem,
- * in NeetCode 150 order. Paste straight into a sheet as a human-readable backup.
+ * in NeetCode All order (then any company-only extras). Paste straight into a sheet as a human-readable backup.
  */
 export function sheetTSV(progress: Record<string, ProblemProgress>): string {
   const rows: string[] = []
-  for (const prob of NEETCODE150) {
+  const ids = new Set(NEETCODE_ALL.map((prob) => prob.id))
+  const ordered = [
+    ...NEETCODE_ALL,
+    ...Object.values(PROBLEM_CATALOG).filter((prob) => !ids.has(prob.id)),
+  ]
+  for (const prob of ordered) {
     const p = progress[prob.id]
     if (!p?.confidence) continue
     const dates = (p.confidenceHistory ?? []).map((h) => toSheetDate(h.date))
