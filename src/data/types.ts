@@ -12,8 +12,8 @@ export interface Problem {
   link: string
 }
 
-/** The three top-level tabs. */
-export type ListId = 'blind75' | 'neetcode150' | 'company'
+/** The top-level tabs. */
+export type ListId = 'blind75' | 'neetcode150' | 'neetcodeAll' | 'company'
 
 export type CompanyId =
   | 'google'
