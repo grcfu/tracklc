@@ -267,7 +267,14 @@ export default function App() {
         ? groupByFrequency(cps)
         : groupByCategory(cps.map((c) => c.problem))
     }
-    if (tab === 'leetcodeAll') return groupByNumberRange(problems.filter(match))
+    if (tab === 'leetcodeAll') {
+      // Searching shows matches in one open list rather than inside collapsed sections.
+      if (isFiltering(filters)) {
+        const flat = problems.filter(match)
+        return flat.length ? [{ key: `Results (${flat.length})`, problems: flat }] : []
+      }
+      return groupByNumberRange(problems)
+    }
     return groupByCategory(problems.filter(match))
   }, [tab, company, companyGrouping, problems, filters, progress])
 
