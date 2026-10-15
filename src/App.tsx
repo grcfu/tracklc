@@ -10,6 +10,7 @@ import {
   companyProblems,
   groupByCategory,
   groupByFrequency,
+  groupByNumberRange,
   listProblems,
   LIST_LABELS,
 } from './data/lists'
@@ -266,6 +267,7 @@ export default function App() {
         ? groupByFrequency(cps)
         : groupByCategory(cps.map((c) => c.problem))
     }
+    if (tab === 'leetcodeAll') return groupByNumberRange(problems.filter(match))
     return groupByCategory(problems.filter(match))
   }, [tab, company, companyGrouping, problems, filters, progress])
 
