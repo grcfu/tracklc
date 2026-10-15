@@ -12,6 +12,7 @@ import {
   groupByFrequency,
   groupByNumberRange,
   listProblems,
+  LEETCODE_ALL_SECTIONS,
   LIST_LABELS,
 } from './data/lists'
 import { COMPANY_META } from './data/companies'
@@ -192,7 +193,10 @@ export default function App() {
   const [companyGrouping, setCompanyGrouping] =
     useState<CompanyGrouping>('frequency')
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
+  // LeetCode All's ~37 sections start collapsed so the tab opens fast.
+  const [collapsed, setCollapsed] = useState<Set<string>>(
+    () => new Set(LEETCODE_ALL_SECTIONS),
+  )
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
 
   const updateFilters = useCallback(
