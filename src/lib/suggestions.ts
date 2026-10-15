@@ -1,5 +1,5 @@
 import type { Problem, ProblemProgress } from '../data/types'
-import { PROBLEM_CATALOG } from '../data/catalog'
+import { PROBLEM_CATALOG, trackedProblems } from '../data/catalog'
 import { isDue, isSolved, overdueDays } from './review'
 import { weakestCategory } from './stats'
 import { todayISO } from './dates'
@@ -64,7 +64,7 @@ export function buildSuggestions(progress: ProgressMap, max = 6): Suggestion[] {
   }
 
   // 1) Overdue reviews, most overdue first.
-  const due = all
+  const due = trackedProblems(progress)
     .filter((p) => isDue(progress[p.id]))
     .sort((a, b) => overdueDays(progress[b.id]) - overdueDays(progress[a.id]))
   for (const problem of due) push(problem, reviewReason(progress[problem.id]), 'review')
