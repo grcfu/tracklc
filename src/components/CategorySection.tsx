@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { ChevronRight } from 'lucide-react'
 import type { Frequency, Problem, ProblemProgress } from '../data/types'
 import { cn, pct } from '../lib/ui'
@@ -15,6 +16,33 @@ interface CategorySectionProps {
   /** Render at most this many rows; the rest load on demand. */
   limit?: number
   onShowMore?: () => void
+}
+
+/** Calls `onShowMore` as the button nears the viewport, so rows load while scrolling. */
+function ShowMore({ left, onShowMore }: { left: number; onShowMore: () => void }) {
+  const ref = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => entries.some((e) => e.isIntersecting) && onShowMore(),
+      { rootMargin: '800px 0px' },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [left, onShowMore])
+
+  return (
+    <button
+      ref={ref}
+      type="button"
+      onClick={onShowMore}
+      className="w-full rounded-xl border border-dashed border-line py-2 text-sm text-muted transition-colors hover:bg-surface hover:text-ink"
+    >
+      Show more ({left} left)
+    </button>
+  )
 }
 
 /** A collapsible category with a per-category progress header and its rows. */
@@ -90,13 +118,7 @@ export function CategorySection({
           ))}
           {problems.length > limit && onShowMore && (
             <li>
-              <button
-                type="button"
-                onClick={onShowMore}
-                className="w-full rounded-xl border border-dashed border-line py-2 text-sm text-muted transition-colors hover:bg-surface hover:text-ink"
-              >
-                Show more ({problems.length - limit} left)
-              </button>
+              <ShowMore left={problems.length - limit} onShowMore={onShowMore} />
             </li>
           )}
         </ul>
