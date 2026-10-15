@@ -39,5 +39,9 @@ const LEETCODE_ALL_BY_ID: Record<string, Problem> = buildCatalog([LEETCODE_ALL])
 export const getProblem = (id: string): Problem | undefined =>
   PROBLEM_CATALOG[id] ?? LEETCODE_ALL_BY_ID[id]
 
+/** Every known problem that has progress, from any list. */
+export const trackedProblems = (progress: Record<string, unknown>): Problem[] =>
+  Object.keys(progress).flatMap((id) => getProblem(id) ?? [])
+
 /** Total number of distinct problems known across all lists. */
 export const TOTAL_PROBLEMS = Object.keys(PROBLEM_CATALOG).length
