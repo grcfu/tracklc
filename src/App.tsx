@@ -297,7 +297,13 @@ export default function App() {
 
   // Open every solved problem's detail panel at once (and un-collapse sections).
   const expandAllSolved = useCallback(() => {
-    setCollapsed(new Set())
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      for (const g of groups) {
+        if (g.problems.some((p) => progress[p.id]?.confidence != null)) next.delete(g.key)
+      }
+      return next
+    })
     setExpanded(
       new Set(
         problems
@@ -305,7 +311,7 @@ export default function App() {
           .map((p) => p.id),
       ),
     )
-  }, [problems, progress])
+  }, [groups, problems, progress])
 
   const collapseAll = useCallback(() => setExpanded(new Set()), [])
 
