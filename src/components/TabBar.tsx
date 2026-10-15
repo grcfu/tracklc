@@ -10,6 +10,7 @@ const TABS: Tab[] = [
   { id: 'blind75', label: 'Blind 75' },
   { id: 'neetcode150', label: 'NeetCode 150' },
   { id: 'neetcodeAll', label: 'NeetCode All' },
+  { id: 'leetcodeAll', label: 'LeetCode All' },
   { id: 'company', label: 'Company Specific' },
 ]
 
