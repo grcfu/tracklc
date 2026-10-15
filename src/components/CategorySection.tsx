@@ -12,6 +12,9 @@ interface CategorySectionProps {
   onToggleCollapse: (title: string) => void
   expandedRows: Set<string>
   handlers: RowHandlers
+  /** Render at most this many rows; the rest load on demand. */
+  limit?: number
+  onShowMore?: () => void
 }
 
 /** A collapsible category with a per-category progress header and its rows. */
@@ -24,6 +27,8 @@ export function CategorySection({
   onToggleCollapse,
   expandedRows,
   handlers,
+  limit = Infinity,
+  onShowMore,
 }: CategorySectionProps) {
   const solved = problems.filter((p) => progress[p.id]?.confidence != null).length
   const total = problems.length
@@ -73,7 +78,7 @@ export function CategorySection({
 
       {!collapsed && (
         <ul className="mt-1.5 space-y-1.5 pl-1">
-          {problems.map((problem) => (
+          {problems.slice(0, limit).map((problem) => (
             <ProblemRow
               key={problem.id}
               problem={problem}
@@ -83,6 +88,17 @@ export function CategorySection({
               {...handlers}
             />
           ))}
+          {problems.length > limit && onShowMore && (
+            <li>
+              <button
+                type="button"
+                onClick={onShowMore}
+                className="w-full rounded-xl border border-dashed border-line py-2 text-sm text-muted transition-colors hover:bg-surface hover:text-ink"
+              >
+                Show more ({problems.length - limit} left)
+              </button>
+            </li>
+          )}
         </ul>
       )}
     </section>
