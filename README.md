@@ -19,8 +19,10 @@ sync your progress to the cloud so it follows you across devices.
 
 ## Features
 
-- **Four lists** — Blind 75, NeetCode 150, NeetCode All (~420 problems), and Company-specific (Google, Meta, Amazon,
-  Microsoft, Apple, Netflix), with progress synced by problem id across all of them.
+- **Five lists** — Blind 75, NeetCode 150, NeetCode All (~420 problems), LeetCode All (every
+  algorithms problem, grouped by number; refresh with `node scripts/fetch-leetcode-all.mjs`), and
+  Company-specific (Google, Meta, Amazon, Microsoft, Apple, Netflix), with progress synced by
+  problem id across all of them.
 - **Rating = status** — rate each problem 1–5★ (colored red→green from the on-page
   palette). No rating means unattempted; any rating marks it solved with that confidence.
 - **Per-attempt history** — every time you rate a problem it logs a dated attempt. Expand
