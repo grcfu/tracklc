@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CalendarClock, Check, ChevronDown, ExternalLink } from 'lucide-react'
 import type { Confidence, ProblemProgress } from '../data/types'
-import { PROBLEM_CATALOG } from '../data/catalog'
+import { trackedProblems } from '../data/catalog'
 import { dueDate, isDue, overdueDays } from '../lib/review'
 import { relativeDays } from '../lib/dates'
 import { cn, DIFFICULTY_BADGE } from '../lib/ui'
@@ -23,7 +23,7 @@ export function ReviewQueue({ progress, onReview }: ReviewQueueProps) {
   const [showAll, setShowAll] = useState(false)
 
   const due = useMemo(() => {
-    return Object.values(PROBLEM_CATALOG)
+    return trackedProblems(progress)
       .filter((p) => isDue(progress[p.id]))
       .sort((a, b) => overdueDays(progress[b.id]) - overdueDays(progress[a.id]))
   }, [progress])
