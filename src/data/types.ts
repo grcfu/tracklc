@@ -10,6 +10,8 @@ export interface Problem {
   difficulty: Difficulty
   /** Canonical leetcode.com URL. */
   link: string
+  /** LeetCode Premium-only problem. */
+  premium?: boolean
 }
 
 /** The top-level tabs. */
