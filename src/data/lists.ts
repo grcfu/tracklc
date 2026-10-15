@@ -68,3 +68,25 @@ export function groupByCategory(problems: Problem[]): Group<Problem>[] {
   }
   return order.map((key) => ({ key, problems: map.get(key)! }))
 }
+
+/** LeetCode All problems per section — sections start collapsed, so keep them small. */
+const RANGE_SIZE = 100
+
+/** Section key for a LeetCode All problem, from the number in its name. */
+function rangeKey(problem: Problem): string {
+  const num = parseInt(problem.name, 10)
+  const start = Math.floor((num - 1) / RANGE_SIZE) * RANGE_SIZE + 1
+  return `#${start}–${start + RANGE_SIZE - 1}`
+}
+
+/** Group LeetCode All problems into numbered ranges (#1–100, #101–200, …). */
+export function groupByNumberRange(problems: Problem[]): Group<Problem>[] {
+  const groups: Group<Problem>[] = []
+  for (const problem of problems) {
+    const key = rangeKey(problem)
+    const last = groups[groups.length - 1]
+    if (last?.key === key) last.problems.push(problem)
+    else groups.push({ key, problems: [problem] })
+  }
+  return groups
+}
