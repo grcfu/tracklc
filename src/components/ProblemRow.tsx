@@ -1,5 +1,5 @@
 import { memo, useEffect, useState } from 'react'
-import { ChevronDown, ExternalLink, Flag, RotateCcw, X } from 'lucide-react'
+import { ChevronDown, ExternalLink, Flag, Lock, RotateCcw, X } from 'lucide-react'
 import type { Confidence, Frequency, Problem, ProblemProgress } from '../data/types'
 import { cn, CONFIDENCE_COLOR, DIFFICULTY_BADGE } from '../lib/ui'
 import { formatDate, maxDate, relativeDays, todayISO } from '../lib/dates'
@@ -101,6 +101,9 @@ function ProblemRowImpl({
               title={`Open ${problem.name} on LeetCode`}
             >
               <span className="truncate">{problem.name}</span>
+              {problem.premium && (
+                <Lock size={12} className="shrink-0 text-muted" aria-label="Premium" />
+              )}
               <ExternalLink
                 size={13}
                 className="shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100"
