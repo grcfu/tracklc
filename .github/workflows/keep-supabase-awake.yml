@@ -7,6 +7,9 @@ on:
     - cron: '0 12 */3 * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   ping:
     runs-on: ubuntu-latest
@@ -20,3 +23,21 @@ jobs:
             "$SUPABASE_URL/rest/v1/tracklc_stores?select=*&limit=1" \
             -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_ANON_KEY"
+
+  # GitHub disables scheduled workflows after 60 days without commits.
+  # Push an empty commit once the latest one is 50 days old.
+  keep-repo-active:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Commit if the repo has been quiet
+        run: |
+          last=$(git log -1 --format=%ct)
+          age_days=$(( ($(date +%s) - last) / 86400 ))
+          echo "Latest commit is $age_days days old"
+          if [ "$age_days" -ge 50 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "Keep scheduled workflows active"
+            git push
+          fi
